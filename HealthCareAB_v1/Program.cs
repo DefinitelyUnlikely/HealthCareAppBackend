@@ -1,4 +1,4 @@
-﻿using HealthCareAB_v1.Extensions;
+using HealthCareAB_v1.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 

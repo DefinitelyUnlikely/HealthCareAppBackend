@@ -1,4 +1,4 @@
-﻿namespace HealthCareAB_v1.Models
+namespace HealthCareAB_v1.Models
 {
     public static class Roles
     {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using HealthCareAB_v1.Models;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;

@@ -1,4 +1,4 @@
-﻿using HealthCareAB_v1.Configuration;
+using HealthCareAB_v1.Configuration;
 using HealthCareAB_v1.Repositories.Implementations;
 using HealthCareAB_v1.Repositories.Interfaces;
 using HealthCareAB_v1.Services;
