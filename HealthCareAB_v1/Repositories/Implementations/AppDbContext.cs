@@ -37,7 +37,7 @@ namespace HealthCareAB_v1.Repositories
         public DbSet<Meeting> Meetings { get; set; }
 
 
-        public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        public new Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             return base.SaveChangesAsync(cancellationToken);
         }
