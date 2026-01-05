@@ -27,15 +27,14 @@ jobs:
     - name: Install dependencies
       run: dotnet restore
       
-    - name: Check code formatting
-      run: dotnet format --verify-no-changes
-      
     - name: Build
       run: dotnet build --configuration Release --no-restore # --configuration Debug if we're using a develop branch
       
     - name: Run tests with coverage
       run: dotnet test --configuration Release --no-build --no-restore --collect:"XPlat Code Coverage" # --configuration Debug if we're using a develop branch
-
+      
+    - name: Check code formatting
+      run: dotnet format --verify-no-changes
     # Make sure github security scanner is set up correctly
     #- name: Security scan
     #  run: dotnet list package --vulnerable --include-transitive --severity high # Fail on high severity vulnerability
