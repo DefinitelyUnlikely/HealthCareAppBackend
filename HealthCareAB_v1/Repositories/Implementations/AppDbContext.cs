@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace HealthCareAB_v1.Repositories.Implementations
+namespace HealthCareAB_v1.Repositories
 {
     public class AppDbContext : DbContext, IAppDbContext
     {

@@ -1,5 +1,5 @@
 using HealthCareAB_v1.Configuration;
-using HealthCareAB_v1.Repositories.Implementations;
+using HealthCareAB_v1.Repositories;
 using HealthCareAB_v1.Repositories.Interfaces;
 using HealthCareAB_v1.Services;
 using HealthCareAB_v1.Services.Interfaces;
@@ -16,7 +16,9 @@ namespace HealthCareAB_v1.Extensions
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
             services.AddHttpContextAccessor(); // Required for AuthService to check current user
+            services.AddScoped<IMeetingRepository, MeetingRepository>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IMeetingService, MeetingService>();
             services.AddScoped<IJwtTokenService, JwtTokenService>();
             services.AddScoped<IAuthService, AuthService>();
             return services;
