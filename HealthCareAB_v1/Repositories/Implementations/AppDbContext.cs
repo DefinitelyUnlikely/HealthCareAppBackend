@@ -26,9 +26,16 @@ namespace HealthCareAB_v1.Repositories.Implementations
             .Property(e => e.Roles)
             .HasConversion(rolesConverter)
             .HasColumnType("jsonb");
+            
+            modelBuilder.Entity<Meeting>()
+            .Property(e => e.Status)
+            .HasConversion<string>()
+            .HasColumnType("text");
         }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<Meeting> Meetings { get; set; }
+
 
         public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
