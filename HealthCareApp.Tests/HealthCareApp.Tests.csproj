@@ -19,4 +19,8 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+    <ItemGroup>
+    <ProjectReference Include="..\HealthCareAB_v1\HealthCareAB_v1.csproj" />
+  </ItemGroup>
+
 </Project>
