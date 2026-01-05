@@ -26,7 +26,7 @@ namespace HealthCareAB_v1.Repositories
             .Property(e => e.Roles)
             .HasConversion(rolesConverter)
             .HasColumnType("jsonb");
-            
+
             modelBuilder.Entity<Meeting>()
             .Property(e => e.Status)
             .HasConversion<string>()
@@ -43,4 +43,3 @@ namespace HealthCareAB_v1.Repositories
         }
     }
 }
-

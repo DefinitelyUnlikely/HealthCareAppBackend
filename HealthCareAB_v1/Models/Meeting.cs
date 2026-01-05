@@ -18,14 +18,14 @@ namespace HealthCareAB_v1.Models
         [Required]
         [Column(TypeName = "text")]
         public MeetingStatus Status { get; set; }
-        
+
         public string? Notes { get; set; }
         [ForeignKey("Patient")]
         [Required]
         public required User Patient { get; set; }
         [Required]
         [ForeignKey("Caregiver")]
-        public required User Caregiver { get; set;}
+        public required User Caregiver { get; set; }
     }
 
     public enum MeetingStatus
