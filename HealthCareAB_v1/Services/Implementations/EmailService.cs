@@ -2,9 +2,9 @@ using HealthCareAB_v1.Services.Interfaces;
 
 namespace HealthCareAB_v1.Services.Implementations;
 
-public class EmailService : IEmailService
+public class AzureEmailService : IEmailService
 {
-    public Task SendEmailAsync(IEmailService.Options options)
+    public Task SendEmailAsync(IEmailService.Email email)
     {
         throw new NotImplementedException();
     }
