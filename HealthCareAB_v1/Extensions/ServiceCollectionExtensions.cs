@@ -27,7 +27,7 @@ namespace HealthCareAB_v1.Extensions
             IConfiguration configuration)
         {
             services.AddDbContext<AppDbContext>(options =>
-                options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+                options.UseNpgsql(configuration.GetConnectionString("Supabase")));
 
             services.AddScoped<IAppDbContext>(provider =>
                 provider.GetRequiredService<AppDbContext>());
