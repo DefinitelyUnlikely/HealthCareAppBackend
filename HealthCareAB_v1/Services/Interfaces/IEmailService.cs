@@ -8,6 +8,7 @@ public interface IEmailService
     {
         public required string To { get; set; }
         public required string Subject { get; set; }
-        public required string HtmlContent { get; set; }
+        public required string PlainContent { get; set; }
+        public string? HtmlContent { get; set; }
     }
 }
