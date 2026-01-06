@@ -7,6 +7,15 @@ namespace HealthCareAB_v1.Services.Implementations;
 
 public class AzureEmailService : IEmailService
 {
+    public readonly string smtpHost;
+    public readonly int smtpPort;
+
+    public AzureEmailService(IConfiguration configuration)
+    {
+        smtpHost = configuration.GetSection("SMTP").GetValue<string>("Host") ?? "localhost";
+        smtpPort = configuration.GetSection("SMTP").GetValue<int>("Port");
+    }
+
     public async Task SendEmailAsync(IEmailService.Email email)
     {
         var message = new MimeMessage();
@@ -30,7 +39,7 @@ public class AzureEmailService : IEmailService
 
         using var smtpClient = new SmtpClient();
         // add server settings using env variables. MailPit can be used for local testing.
-        await smtpClient.ConnectAsync("");
+        await smtpClient.ConnectAsync(smtpHost, smtpPort);
         await smtpClient.SendAsync(message);
         await smtpClient.DisconnectAsync(true);
     }
