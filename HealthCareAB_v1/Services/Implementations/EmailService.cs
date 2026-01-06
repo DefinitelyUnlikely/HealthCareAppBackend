@@ -7,13 +7,13 @@ namespace HealthCareAB_v1.Services.Implementations;
 
 public class AzureEmailService : IEmailService
 {
-    public readonly string smtpHost;
-    public readonly int smtpPort;
+    private readonly string _smtpHost;
+    private readonly int _smtpPort;
 
     public AzureEmailService(IConfiguration configuration)
     {
-        smtpHost = configuration.GetSection("SMTP").GetValue<string>("Host") ?? "localhost";
-        smtpPort = configuration.GetSection("SMTP").GetValue<int>("Port");
+        _smtpHost = configuration.GetSection("SMTP").GetValue<string>("Host") ?? "localhost";
+        _smtpPort = configuration.GetSection("SMTP").GetValue<int>("Port");
     }
 
     public async Task SendEmailAsync(IEmailService.Email email)
@@ -39,7 +39,7 @@ public class AzureEmailService : IEmailService
 
         using var smtpClient = new SmtpClient();
         // add server settings using env variables. MailPit can be used for local testing.
-        await smtpClient.ConnectAsync(smtpHost, smtpPort);
+        await smtpClient.ConnectAsync(_smtpHost, _smtpPort);
         await smtpClient.SendAsync(message);
         await smtpClient.DisconnectAsync(true);
     }

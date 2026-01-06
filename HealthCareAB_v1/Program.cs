@@ -1,4 +1,6 @@
 using HealthCareAB_v1.Extensions;
+using HealthCareAB_v1.Services.Implementations;
+using HealthCareAB_v1.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +24,8 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddScoped<IEmailService, AzureEmailService>();
 
 var app = builder.Build();
 
