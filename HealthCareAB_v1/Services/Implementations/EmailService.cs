@@ -10,7 +10,7 @@ public class AzureEmailService : IEmailService
     public async Task SendEmailAsync(IEmailService.Email email)
     {
         var message = new MimeMessage();
-        message.From.Add(new MailboxAddress("HealthCareAB", "healthcareab@outlook.com"));
+        message.From.Add(new MailboxAddress("HealthCareAB", "health@care.ab"));
         message.To.Add(new MailboxAddress(email.To, email.To));
         message.Subject = email.Subject;
 
