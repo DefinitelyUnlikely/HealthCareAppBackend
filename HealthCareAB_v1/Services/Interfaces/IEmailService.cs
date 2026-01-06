@@ -6,8 +6,37 @@ public interface IEmailService
 
     public class Email
     {
-        public required string To { get; set; }
-        public required string Subject { get; set; }
+        private string _to = string.Empty;
+        private string _subject = string.Empty;
+
+        public required string To
+        {
+            get => _to;
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    throw new ArgumentException("Value cannot be null or whitespace.", nameof(value));
+                }
+
+                _to = value;
+            }
+        }
+
+        public required string Subject
+        {
+            get => _subject;
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    value = "No subject";
+                }
+
+                _subject = value;
+            }
+        }
+
         public required string PlainContent { get; set; }
         public string? HtmlContent { get; set; }
     }

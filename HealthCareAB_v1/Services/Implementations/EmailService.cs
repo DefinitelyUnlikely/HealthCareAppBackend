@@ -4,18 +4,11 @@ using MimeKit.Text;
 
 namespace HealthCareAB_v1.Services.Implementations;
 
-public class MimeKitEmailService : IEmailService
+public class MimeKitEmailService(IConfiguration configuration, ISmtpClientFactory smtpClientFactory)
+    : IEmailService
 {
-    private readonly string _smtpHost;
-    private readonly int _smtpPort;
-    private readonly ISmtpClientFactory _smtpClientFactory;
-
-    public MimeKitEmailService(IConfiguration configuration, ISmtpClientFactory smtpClientFactory)
-    {
-        _smtpHost = configuration.GetSection("SMTP").GetValue<string>("Host") ?? "localhost";
-        _smtpPort = configuration.GetSection("SMTP").GetValue<int>("Port");
-        _smtpClientFactory = smtpClientFactory;
-    }
+    private readonly string _smtpHost = configuration.GetSection("SMTP").GetValue<string>("Host") ?? "localhost";
+    private readonly int _smtpPort = configuration.GetSection("SMTP").GetValue<int>("Port");
 
     public async Task SendEmailAsync(IEmailService.Email email)
     {
@@ -38,9 +31,9 @@ public class MimeKitEmailService : IEmailService
             message.Body = new TextPart(TextFormat.Plain) { Text = email.PlainContent };
         }
 
-        using var smtpClient = _smtpClientFactory.CreateClient();
+        using var smtpClient = smtpClientFactory.CreateClient();
         await smtpClient.ConnectAsync(_smtpHost, _smtpPort);
         await smtpClient.SendAsync(message);
         await smtpClient.DisconnectAsync(true);
     }
-}   
+}
