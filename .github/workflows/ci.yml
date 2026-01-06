@@ -46,13 +46,7 @@ jobs:
       run: dotnet build --configuration Release --no-restore # --configuration Debug if we're using a develop branch
       
     - name: Run tests with coverage
-      run: | 
-        dotnet test --configuration Release --no-build --no-restore \
-        /p:CollectCoverage=true \
-        /p:CoverletOutputFormat=cobertura \
-        /p:CoverletOutput=./TestResults/coverage.cobertura.xml \
-        /p:Exclude="[*.Tests]*" \
-        /p:ExcludeByFile="**/bin/**;**/obj/**;**/*.g.cs;**/*.g.i.cs;**/*.designer.cs;**/*AssemblyInfo.cs;**/Migrations/*.cs;**/Program.cs"
+      run: dotnet test --configuration Release --no-build --no-restore --collect:"XPlat Code Coverage"
       # --configuration Debug if we're using a develop branch --collect:"XPlat Code Coverage" removed to allow excludes
     
     - name: Publish coverage
@@ -72,3 +66,4 @@ jobs:
     # Make sure github security scanner is set up correctly otherwise run:
     #- name: Security scan
     #  run: dotnet list package --vulnerable --include-transitive --severity high # Fail on high severity vulnerability
+
