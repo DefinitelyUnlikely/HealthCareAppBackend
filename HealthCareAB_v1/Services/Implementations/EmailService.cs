@@ -5,6 +5,7 @@ using MimeKit.Text;
 
 namespace HealthCareAB_v1.Services.Implementations;
 
+// In testing, we use Mailpit to mock the SMTP server. Production would use a real SMTP server. 
 public class MimeKitEmailService(IConfiguration configuration, ISmtpClientFactory smtpClientFactory)
     : IEmailService
 {
