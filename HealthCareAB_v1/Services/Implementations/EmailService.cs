@@ -24,8 +24,10 @@ public class MimeKitEmailService(IConfiguration configuration, ISmtpClientFactor
         message.Subject = email.Subject;
 
 
-        var bodyBuilder = new BodyBuilder();
-        bodyBuilder.TextBody = $"{email.PlainContent}";
+        var bodyBuilder = new BodyBuilder
+        {
+            TextBody = $"{email.PlainContent}"
+        };
 
         if (email.HtmlContent is not null)
         {
