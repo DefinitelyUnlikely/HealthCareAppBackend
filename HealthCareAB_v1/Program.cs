@@ -1,4 +1,6 @@
 using HealthCareAB_v1.Extensions;
+using HealthCareAB_v1.Services.Implementations;
+using HealthCareAB_v1.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +24,10 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+
+builder.Services.AddSingleton<ISmtpClientFactory, SmtpClientFactory>();
+builder.Services.AddScoped<IEmailService, MimeKitEmailService>();
 
 var app = builder.Build();
 
