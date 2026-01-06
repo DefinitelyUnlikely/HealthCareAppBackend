@@ -1,4 +1,5 @@
 using HealthCareAB_v1.Services.Interfaces;
+using HealthCareAB_v1.Utils;
 using MimeKit;
 using MimeKit.Text;
 
@@ -12,24 +13,26 @@ public class MimeKitEmailService(IConfiguration configuration, ISmtpClientFactor
 
     public async Task SendEmailAsync(IEmailService.Email email)
     {
+        if (!EmailValidator.IsValid(email.To))
+        {
+            throw new ArgumentException("Invalid email address.");
+        }
+
         var message = new MimeMessage();
         message.From.Add(new MailboxAddress("HealthCareAB", "health@care.ab"));
         message.To.Add(new MailboxAddress(email.To, email.To));
         message.Subject = email.Subject;
 
+
+        var bodyBuilder = new BodyBuilder();
+        bodyBuilder.TextBody = $"{email.PlainContent}";
+
         if (email.HtmlContent is not null)
         {
-            var bodyBuilder = new BodyBuilder
-            {
-                HtmlBody = $"{email.HtmlContent}",
-                TextBody = $"{email.PlainContent}"
-            };
-            message.Body = bodyBuilder.ToMessageBody();
+            bodyBuilder.HtmlBody = $"{email.HtmlContent}";
         }
-        else
-        {
-            message.Body = new TextPart(TextFormat.Plain) { Text = email.PlainContent };
-        }
+
+        message.Body = bodyBuilder.ToMessageBody();
 
         using var smtpClient = smtpClientFactory.CreateClient();
         await smtpClient.ConnectAsync(_smtpHost, _smtpPort);
