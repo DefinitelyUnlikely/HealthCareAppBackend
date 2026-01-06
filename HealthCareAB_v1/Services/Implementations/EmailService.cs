@@ -5,12 +5,12 @@ using MimeKit.Text;
 
 namespace HealthCareAB_v1.Services.Implementations;
 
-public class EmailService : IEmailService
+public class MimeKitEmailService : IEmailService
 {
     private readonly string _smtpHost;
     private readonly int _smtpPort;
 
-    public EmailService(IConfiguration configuration)
+    public MimeKitEmailService(IConfiguration configuration, ISmtpClientFactory smtpClientFactory)
     {
         _smtpHost = configuration.GetSection("SMTP").GetValue<string>("Host") ?? "localhost";
         _smtpPort = configuration.GetSection("SMTP").GetValue<int>("Port");
@@ -37,10 +37,11 @@ public class EmailService : IEmailService
             message.Body = new TextPart(TextFormat.Plain) { Text = email.PlainContent };
         }
 
+        // This is hard to test. We're gonna want to wrap this
+        // so we can create a mock of it as well I think?
         using var smtpClient = new SmtpClient();
-        // add server settings using env variables. MailPit can be used for local testing.
         await smtpClient.ConnectAsync(_smtpHost, _smtpPort);
         await smtpClient.SendAsync(message);
         await smtpClient.DisconnectAsync(true);
     }
-}
+}   
