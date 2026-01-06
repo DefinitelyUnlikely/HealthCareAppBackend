@@ -52,7 +52,7 @@ jobs:
         /p:CoverletOutputFormat=cobertura \
         /p:CoverletOutput=./TestResults/coverage.cobertura.xml \
         /p:Exclude="[*.Tests]*" \
-        /p:ExcludeByFile="**/bin/**,**/obj/**,**/*.g.cs,**/*.g.i.cs,**/*.designer.cs,**/*AssemblyInfo.cs,**/Migrations/*.cs,**/Program.cs"
+        /p:ExcludeByFile="**/bin/**;**/obj/**;**/*.g.cs;**/*.g.i.cs;**/*.designer.cs;**/*AssemblyInfo.cs;**/Migrations/*.cs;**/Program.cs"
       # --configuration Debug if we're using a develop branch --collect:"XPlat Code Coverage" removed to allow excludes
     
     - name: Publish coverage
