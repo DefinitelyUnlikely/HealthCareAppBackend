@@ -21,7 +21,7 @@ public class EmailServiceTests
             .AddInMemoryCollection(inMemoryConfig)
             .Build();
 
-        var emailService = new AzureEmailService(configuration);
+        var emailService = new EmailService(configuration);
 
         // Act
 

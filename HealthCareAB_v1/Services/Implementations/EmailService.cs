@@ -5,12 +5,12 @@ using MimeKit.Text;
 
 namespace HealthCareAB_v1.Services.Implementations;
 
-public class AzureEmailService : IEmailService
+public class EmailService : IEmailService
 {
     private readonly string _smtpHost;
     private readonly int _smtpPort;
 
-    public AzureEmailService(IConfiguration configuration)
+    public EmailService(IConfiguration configuration)
     {
         _smtpHost = configuration.GetSection("SMTP").GetValue<string>("Host") ?? "localhost";
         _smtpPort = configuration.GetSection("SMTP").GetValue<int>("Port");
