@@ -1,5 +1,4 @@
 using HealthCareAB_v1.Services.Interfaces;
-using MailKit.Net.Smtp;
 using MimeKit;
 using MimeKit.Text;
 
@@ -9,11 +8,13 @@ public class MimeKitEmailService : IEmailService
 {
     private readonly string _smtpHost;
     private readonly int _smtpPort;
+    private readonly ISmtpClientFactory _smtpClientFactory;
 
     public MimeKitEmailService(IConfiguration configuration, ISmtpClientFactory smtpClientFactory)
     {
         _smtpHost = configuration.GetSection("SMTP").GetValue<string>("Host") ?? "localhost";
         _smtpPort = configuration.GetSection("SMTP").GetValue<int>("Port");
+        _smtpClientFactory = smtpClientFactory;
     }
 
     public async Task SendEmailAsync(IEmailService.Email email)
@@ -37,9 +38,7 @@ public class MimeKitEmailService : IEmailService
             message.Body = new TextPart(TextFormat.Plain) { Text = email.PlainContent };
         }
 
-        // This is hard to test. We're gonna want to wrap this
-        // so we can create a mock of it as well I think?
-        using var smtpClient = new SmtpClient();
+        using var smtpClient = _smtpClientFactory.CreateClient();
         await smtpClient.ConnectAsync(_smtpHost, _smtpPort);
         await smtpClient.SendAsync(message);
         await smtpClient.DisconnectAsync(true);
