@@ -47,7 +47,7 @@ jobs:
       
     - name: Run tests with coverage
       run: | 
-        dotnet test --configuration Release --no-build --no-restore\
+        dotnet test --configuration Release --no-build --no-restore \
         /p:CollectCoverage=true \
         /p:CoverletOutputFormat=cobertura \
         /p:CoverletOutput=./TestResults/coverage.cobertura.xml \
@@ -67,7 +67,6 @@ jobs:
         thresholds: '30 60' # These should be tweaked
 
     - name: Write to Job Summary
-      if: always()
       run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
       
     # Make sure github security scanner is set up correctly otherwise run:
