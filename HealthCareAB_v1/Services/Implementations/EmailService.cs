@@ -29,7 +29,8 @@ public class AzureEmailService : IEmailService
         }
 
         using var smtpClient = new SmtpClient();
-        await smtpClient.ConnectAsync(""); // add server settings using env variables.
+        // add server settings using env variables. MailPit can be used for local testing.
+        await smtpClient.ConnectAsync("");
         await smtpClient.SendAsync(message);
         await smtpClient.DisconnectAsync(true);
     }
