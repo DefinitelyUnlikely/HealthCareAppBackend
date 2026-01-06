@@ -114,6 +114,11 @@ public class EmailServiceTests
         });
 
         // Assert
+        smptClientMock.Verify(client => client.ConnectAsync("localhost", 1025, false, It.IsAny<CancellationToken>()),
+            Times.Once());
+        smptClientMock.Verify(client => client.SendAsync(It.IsAny<MimeMessage>(), It.IsAny<CancellationToken>()),
+            Times.Once());
+        smptClientMock.Verify(client => client.DisconnectAsync(true, It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Fact]
