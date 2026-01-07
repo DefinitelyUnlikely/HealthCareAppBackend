@@ -3,6 +3,7 @@ using HealthCareAB_v1.Services.Interfaces;
 using HealthCareAB_v1.Services.Implementations;
 using Microsoft.Extensions.Configuration;
 using MimeKit;
+using System.Threading.Tasks;
 
 namespace HealthCareApp.Tests;
 
@@ -12,7 +13,7 @@ public class EmailServiceTests
     public async Task SendEmailAsync_WhenCalled_SendsEmail()
     {
         // Arrange
-        var inMemoryConfig = new Dictionary<string, string>
+        var inMemoryConfig = new Dictionary<string, string?>
         {
             { "SMTP:Host", "localhost" },
             { "SMTP:Port", "1025" }
@@ -49,7 +50,7 @@ public class EmailServiceTests
     public async Task SendEmailAsync_MimeMessageContentIsCorrect()
     {
         // Arrange
-        var inMemoryConfig = new Dictionary<string, string>
+        var inMemoryConfig = new Dictionary<string, string?>
         {
             { "SMTP:Host", "localhost" },
             { "SMTP:Port", "1025" }
@@ -88,7 +89,7 @@ public class EmailServiceTests
     public async Task SendEmailAsync_WithEmptySubject_SendsSuccessfully()
     {
         // Arrange
-        var inMemoryConfig = new Dictionary<string, string>
+        var inMemoryConfig = new Dictionary<string, string?>
         {
             { "SMTP:Host", "localhost" },
             { "SMTP:Port", "1025" }
@@ -122,10 +123,10 @@ public class EmailServiceTests
     }
 
     [Fact]
-    public void Constructor_WithMissingHost_UsesDefaultLocalhost()
+    public async Task Constructor_WithMissingHost_UsesDefaultLocalhost()
     {
         // Arrange
-        var inMemoryConfig = new Dictionary<string, string>
+        var inMemoryConfig = new Dictionary<string, string?>
         {
             { "SMTP:Port", "1025" }
         };
@@ -141,7 +142,7 @@ public class EmailServiceTests
         var emailService = new MimeKitEmailService(configuration, smtpClientFactoryMock.Object);
 
         // Act
-        emailService.SendEmailAsync(new IEmailService.Email
+        await emailService.SendEmailAsync(new IEmailService.Email
         {
             To = "test@example.com",
             Subject = "Test Subject",
@@ -161,7 +162,7 @@ public class EmailServiceTests
     public async Task SendEmailAsync_WithMissingPort_UsesDefaultPort()
     {
         // Arrange
-        var inMemoryConfig = new Dictionary<string, string>
+        var inMemoryConfig = new Dictionary<string, string?>
         {
             { "SMTP:Host", "localhost" }
         };
@@ -177,7 +178,7 @@ public class EmailServiceTests
         var emailService = new MimeKitEmailService(configuration, smtpClientFactoryMock.Object);
 
         // Act
-        emailService.SendEmailAsync(new IEmailService.Email
+        await emailService.SendEmailAsync(new IEmailService.Email
         {
             To = "test@example.com",
             Subject = "Test Subject",
@@ -197,7 +198,7 @@ public class EmailServiceTests
     public async Task SendEmailAsync_WithInvalidEmail_ThrowsArgumentException()
     {
         // Arrange
-        var inMemoryConfig = new Dictionary<string, string>
+        var inMemoryConfig = new Dictionary<string, string?>
         {
             { "SMTP:Host", "localhost" },
             { "SMTP:Port", "1025" }
