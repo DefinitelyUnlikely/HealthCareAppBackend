@@ -18,4 +18,9 @@ public class MeetingService : IMeetingService
     {
         throw new NotImplementedException();
     }
+
+    public async Task<Meeting> ConfirmAsynx(ConfirmMeetingDto meeting)
+    {
+        throw new NotImplementedException();
+    }
 }

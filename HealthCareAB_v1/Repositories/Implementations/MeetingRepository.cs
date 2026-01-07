@@ -17,7 +17,12 @@ public class MeetingRepository : IMeetingRepository
     public async Task<Meeting> CreateAsync(Meeting meeting)
     {
         await _context.Meetings.AddAsync(meeting);
-        await _context.SaveChangesAsync();
+        await SaveChangesAsync();
         return meeting;
+    }
+
+    public async Task<int> SaveChangesAsync()
+    {
+        return await _context.SaveChangesAsync();
     }
 }
