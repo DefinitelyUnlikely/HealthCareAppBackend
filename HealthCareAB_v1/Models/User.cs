@@ -21,6 +21,8 @@ namespace HealthCareAB_v1.Models
         public string PhoneNumber { get; set; } = string.Empty;
         [Required]
         public string Address { get; set; } = string.Empty;
+        [Required]
+        public string PersonalNumber { get; set; } = string.Empty;
 
         /// <summary>
         /// User roles for authorization. Defaults to empty list.
