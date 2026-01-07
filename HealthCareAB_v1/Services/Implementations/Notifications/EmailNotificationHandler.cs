@@ -17,4 +17,9 @@ public class EmailNotificationHandler(IEmailService emailService) : INotificatio
         };
         await emailService.SendEmailAsync(email);
     }
+
+    public bool CanHandle(Notification notification)
+    {
+        return notification is EmailNotification;
+    }
 }
