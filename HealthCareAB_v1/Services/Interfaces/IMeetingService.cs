@@ -7,4 +7,5 @@ public interface IMeetingService
 {
     public Task<Meeting> CreateAsync(CreateMeetingDto meeting);
     public Task<Meeting> ConfirmAsynx(ConfirmMeetingDto meeting);
+    public Task<MeetingResponseDto> GetMeetingAsync(Guid id, int userId, bool isAdmin);
 }

@@ -57,9 +57,10 @@ namespace HealthCareAB_v1.Extensions
                         ValidateIssuer = true,
                         ValidateAudience = true,
                         ValidateLifetime = true,
-                        ValidateIssuerSigningKey = false,
+                        ValidateIssuerSigningKey = true,
                         ValidIssuer = jwtSettings.Issuer,
-                        ValidAudience = jwtSettings.Audience
+                        ValidAudience = jwtSettings.Audience,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Secret))
                     };
 
                     // Read JWT from HttpOnly cookie
