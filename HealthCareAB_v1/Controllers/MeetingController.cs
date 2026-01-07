@@ -22,7 +22,7 @@ namespace HealthCareAB_v1.Controllers
         /// Gets a specific meeting by Id.
         /// </summary>
         [Authorize]
-        [HttpPost("{id}")]
+        [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
