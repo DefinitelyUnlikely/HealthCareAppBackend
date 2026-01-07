@@ -1,4 +1,4 @@
-using HealthCareAB_v1.Models;
+using HealthCareAB_v1.DTOs.Notification;
 
 namespace HealthCareAB_v1.Services.Interfaces;
 
