@@ -2,7 +2,6 @@ using System.Security.Claims;
 using HealthCareAB_v1.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using HealthCareAB_v1.Constants;
 using HealthCareAB_v1.Services.Interfaces;
 
 namespace HealthCareAB_v1.Controllers
@@ -20,19 +19,27 @@ namespace HealthCareAB_v1.Controllers
         }
 
         /// <summary>
-        /// Creates a new meeting.
+        /// Gets a specific meeting by Id.
         /// </summary>
         [Authorize]
-        [HttpPost("create")]
-        public async Task<IActionResult> CreateMeeting([FromBody] CreateMeetingDto request)
+        [HttpPost("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> GetMeeting(Guid id)
         {
-            var result = await _meetingService.CreateAsync(request);
-            return CreatedAtAction(nameof(CreateMeeting), new { result.Id });
-        }
+            var claimId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if(!int.TryParse(claimId, out int userId))
+            {
+                return Unauthorized(new { message = "Not authenticated" });
+            }
 
-        public async Task<IActionResult> ConfirmMeeting([FromBody] ConfirmMeetingDto request)
-        {
-            throw new NotImplementedException();
+            var result = await _meetingService.GetMeetingAsync(id, userId);
+            if (!result.Success)
+            {
+                return NotFound(new { message = result.Message });
+            }
+            return Ok(result);
         }
     }
 }
