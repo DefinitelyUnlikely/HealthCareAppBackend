@@ -4,12 +4,10 @@ using HealthCareAB_v1.Exceptions;
 
 namespace HealthCareAB_v1.Services.Implementations.Notifications;
 
-public class NotificationService(IServiceProvider serviceProvider) : INotificationService
+public class NotificationService(IEnumerable<INotificationHandler> handlers) : INotificationService
 {
     public async Task SendNotificationAsync(Notification notification)
     {
-        var handlers = serviceProvider.GetServices<INotificationHandler<Notification>>();
-
         if (handlers is null)
         {
             throw new HandlerNotFoundException("No handlers found.");

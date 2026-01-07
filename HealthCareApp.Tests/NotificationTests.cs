@@ -1,6 +1,5 @@
 namespace HealthCareApp.Tests;
 
-
 public class NotificationModel_EmailNotification_Tests
 {
     [Fact]

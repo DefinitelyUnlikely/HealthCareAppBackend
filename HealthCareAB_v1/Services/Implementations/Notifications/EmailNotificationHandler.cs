@@ -4,16 +4,21 @@ using HealthCareAB_v1.Services.Interfaces.Notifications;
 
 namespace HealthCareAB_v1.Services.Implementations.Notifications;
 
-public class EmailNotificationHandler(IEmailService emailService) : INotificationHandler<EmailNotification>
+public class EmailNotificationHandler(IEmailService emailService) : INotificationHandler
 {
-    public async Task HandleAsync(EmailNotification notification)
+    public async Task HandleAsync(Notification notification)
     {
+        if (notification is not EmailNotification emailNotification)
+        {
+            return;
+        }
+
         var email = new IEmailService.Email
         {
-            To = notification.SendToUser.Email,
-            Subject = notification.Subject,
-            HtmlContent = notification.Html,
-            PlainContent = notification.Message
+            To = emailNotification.SendToUser.Email,
+            Subject = emailNotification.Subject,
+            HtmlContent = emailNotification.Html,
+            PlainContent = emailNotification.Message
         };
         await emailService.SendEmailAsync(email);
     }
