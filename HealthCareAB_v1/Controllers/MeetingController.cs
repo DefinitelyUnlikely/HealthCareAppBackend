@@ -28,13 +28,17 @@ namespace HealthCareAB_v1.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetMeeting(Guid id)
         {
+            bool isAdmin = false;
             var claimId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if(!int.TryParse(claimId, out int userId))
+            if (!int.TryParse(claimId, out int userId))
             {
                 return Unauthorized(new { message = "Not authenticated" });
             }
+            var claimRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            if (claimRole is "Admin") isAdmin = true;
 
-            var result = await _meetingService.GetMeetingAsync(id, userId);
+
+            var result = await _meetingService.GetMeetingAsync(id, userId, isAdmin);
             if (!result.Success)
             {
                 return NotFound(new { message = result.Message });

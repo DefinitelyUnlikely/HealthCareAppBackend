@@ -5,5 +5,5 @@ namespace HealthCareAB_v1.Services.Interfaces;
 
 public interface IMeetingService
 {
-    public Task<MeetingResponseDto> GetMeetingAsync (Guid id, int userId);
+    public Task<MeetingResponseDto> GetMeetingAsync(Guid id, int userId, bool isAdmin);
 }

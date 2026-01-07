@@ -41,7 +41,7 @@ public class MeetingControllerTests
 
         var mockService = new Mock<IMeetingService>();
         mockService
-            .Setup(s => s.GetMeetingAsync(meetingId, 1))
+            .Setup(s => s.GetMeetingAsync(meetingId, 1, false))
             .ReturnsAsync(new MeetingResponseDto { Success = false, Message = "Meeting not found" });
 
         var controller = new MeetingController(mockService.Object);
@@ -50,10 +50,10 @@ public class MeetingControllerTests
         {
             HttpContext = new DefaultHttpContext
             {
-                User = new ClaimsPrincipal(new ClaimsIdentity(new[]
-                {
+                User = new ClaimsPrincipal(new ClaimsIdentity(
+                [
                     new Claim(ClaimTypes.NameIdentifier, "1")
-                }))
+                ]))
             }
         };
 
@@ -69,11 +69,11 @@ public class MeetingControllerTests
     {
         // Arrange
         var meetingId = Guid.NewGuid();
-        var meeting = new Meeting{ Id = meetingId, Patient = new User { Id = 1 }, Caregiver = new User { Id = 2 }};
+        var meeting = new Meeting { Id = meetingId, Patient = new User { Id = 1 }, Caregiver = new User { Id = 2 } };
 
         var mockService = new Mock<IMeetingService>();
         mockService
-            .Setup(s => s.GetMeetingAsync(meetingId, 1))
+            .Setup(s => s.GetMeetingAsync(meetingId, 1, false))
             .ReturnsAsync(new MeetingResponseDto { Success = true, Meeting = meeting });
 
         var controller = new MeetingController(mockService.Object);
@@ -82,10 +82,10 @@ public class MeetingControllerTests
         {
             HttpContext = new DefaultHttpContext
             {
-                User = new ClaimsPrincipal(new ClaimsIdentity(new[]
-                {
+                User = new ClaimsPrincipal(new ClaimsIdentity(
+                [
                     new Claim(ClaimTypes.NameIdentifier, "1")
-                }))
+                ]))
             }
         };
 
@@ -97,5 +97,4 @@ public class MeetingControllerTests
         var returned = Assert.IsType<MeetingResponseDto>(ok.Value);
         Assert.Equal(meeting, returned.Meeting);
     }
-
 }

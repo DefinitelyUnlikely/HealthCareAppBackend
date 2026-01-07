@@ -11,7 +11,7 @@ public class MeetingRepository : IMeetingRepository
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
     }
-    
+
     public async Task<Meeting?> GetAsync(Guid id)
     {
         return await _context.Meetings.FindAsync(id);

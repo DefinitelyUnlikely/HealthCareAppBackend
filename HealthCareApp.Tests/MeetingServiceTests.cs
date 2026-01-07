@@ -16,7 +16,7 @@ public class MeetingServiceTests
         var meetingService = new MeetingService(mockMeetingRepository.Object);
 
         // Act
-        var result = await meetingService.GetMeetingAsync(Guid.NewGuid(), 1);
+        var result = await meetingService.GetMeetingAsync(Guid.NewGuid(), 1, false);
 
         // Assert
         Assert.False(result.Success);
@@ -45,7 +45,7 @@ public class MeetingServiceTests
         var meetingService = new MeetingService(mockMeetingRepository.Object);
 
         // Act
-        var result = await meetingService.GetMeetingAsync(meetingId, nonParticipantUserId);
+        var result = await meetingService.GetMeetingAsync(meetingId, nonParticipantUserId, false);
 
         // Assert
         Assert.False(result.Success);
@@ -73,7 +73,7 @@ public class MeetingServiceTests
         var meetingService = new MeetingService(mockMeetingRepository.Object);
 
         // Act
-        var result = await meetingService.GetMeetingAsync(meetingId, patientId);
+        var result = await meetingService.GetMeetingAsync(meetingId, patientId, false);
 
         // Assert
         Assert.True(result.Success);
@@ -101,7 +101,36 @@ public class MeetingServiceTests
         var meetingService = new MeetingService(mockMeetingRepository.Object);
 
         // Act
-        var result = await meetingService.GetMeetingAsync(meetingId, caregiverId);
+        var result = await meetingService.GetMeetingAsync(meetingId, caregiverId, false);
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.Equal(meeting, result.Meeting);
+    }
+
+    [Fact]
+    public async Task ValidMeetingId_NonParticipantUser_IsAdmin_ReturnsMeeting()
+    {
+        // Arrange
+        var meetingId = Guid.NewGuid();
+        var caregiverId = 1;
+        var patientId = 2;
+        var nonParticipantUserId = 3;
+
+        var meeting = new HealthCareAB_v1.Models.Meeting
+        {
+            Id = meetingId,
+            Caregiver = new HealthCareAB_v1.Models.User { Id = caregiverId },
+            Patient = new HealthCareAB_v1.Models.User { Id = patientId }
+        };
+
+        var mockMeetingRepository = new Mock<IMeetingRepository>();
+        mockMeetingRepository.Setup(repo => repo.GetAsync(meetingId)).ReturnsAsync(meeting);
+
+        var meetingService = new MeetingService(mockMeetingRepository.Object);
+
+        // Act
+        var result = await meetingService.GetMeetingAsync(meetingId, nonParticipantUserId, true);
 
         // Assert
         Assert.True(result.Success);

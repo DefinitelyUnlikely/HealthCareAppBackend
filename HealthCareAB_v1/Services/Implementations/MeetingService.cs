@@ -14,14 +14,15 @@ public class MeetingService : IMeetingService
         _meetingRepository = meetingRepository ?? throw new ArgumentNullException(nameof(meetingRepository));
     }
 
-    public async Task<MeetingResponseDto> GetMeetingAsync (Guid id, int userId)
+    public async Task<MeetingResponseDto> GetMeetingAsync(Guid id, int userId, bool isAdmin)
     {
         var meeting = await _meetingRepository.GetAsync(id);
-        if(meeting is null) return new MeetingResponseDto { Success = false, Message = "Meeting not found" };
-        if(meeting.Caregiver.Id != userId && meeting.Patient.Id != userId)
+        if (meeting is null) return new MeetingResponseDto { Success = false, Message = "Meeting not found" };
+        var isParticipant = meeting.Caregiver.Id == userId || meeting.Patient.Id == userId;
+        if (!isParticipant && !isAdmin)
         {
             // Return not found even if meeting exists.
-             return new MeetingResponseDto { Success = false, Message = "Meeting not found" };
+            return new MeetingResponseDto { Success = false, Message = "Meeting not found" };
         }
         return new MeetingResponseDto { Success = true, Meeting = meeting };
     }
