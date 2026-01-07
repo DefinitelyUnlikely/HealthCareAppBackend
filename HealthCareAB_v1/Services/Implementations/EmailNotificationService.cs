@@ -3,7 +3,7 @@ using HealthCareAB_v1.Services.Interfaces;
 
 namespace HealthCareAB_v1.Services.Implementations;
 
-public class NotificationService : INotificationService
+public class EmailNotificationService : INotificationService
 {
     public Task SendNotificationAsync(Notification notification)
     {
