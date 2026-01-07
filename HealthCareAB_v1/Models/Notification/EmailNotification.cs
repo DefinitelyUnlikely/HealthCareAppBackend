@@ -1,6 +1,6 @@
 namespace HealthCareAB_v1.Models.Notification;
 
-public abstract class EmailNotification : Notification
+public class EmailNotification : Notification
 {
     public required string Subject { get; set; }
     public required string Html { get; set; }
