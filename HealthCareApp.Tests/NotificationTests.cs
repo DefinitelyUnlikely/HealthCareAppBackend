@@ -71,7 +71,11 @@ public class NotificationModel_EmailNotification_Tests
         // Act
         var notification = new MeetingConfirmedEmailNotification()
         {
-            Meeting = meeting, Subject = "Subject", Html = "Html", Message = "Message", RecipientUser = meeting.Patient
+            Meeting = meeting,
+            Subject = "Subject",
+            Html = "Html",
+            Message = "Message",
+            RecipientUser = meeting.Patient
         };
 
         // Assert
@@ -94,7 +98,11 @@ public class NotificationModel_EmailNotification_Tests
         // Act
         var notification = new MeetingCancelledEmailNotification()
         {
-            Meeting = meeting, Subject = "Subject", Html = "Html", Message = "Message", RecipientUser = meeting.Patient
+            Meeting = meeting,
+            Subject = "Subject",
+            Html = "Html",
+            Message = "Message",
+            RecipientUser = meeting.Patient
         };
 
         // Assert
@@ -119,7 +127,11 @@ public class NotificationModel_EmailNotification_Tests
         // Act
         var notification = new MeetingReminderEmailNotification()
         {
-            Meeting = meeting, Subject = "Subject", Html = "Html", Message = "Message", RecipientUser = meeting.Patient
+            Meeting = meeting,
+            Subject = "Subject",
+            Html = "Html",
+            Message = "Message",
+            RecipientUser = meeting.Patient
         };
 
         // Assert
@@ -178,7 +190,9 @@ public class NotificationServiceTests
         // Arrange
         var notification = new MeetingConfirmedEmailNotification
         {
-            Meeting = TestData.GetMockMeeting(), RecipientUser = TestData.GetMockPatient(), Subject = "Test Subject"
+            Meeting = TestData.GetMockMeeting(),
+            RecipientUser = TestData.GetMockPatient(),
+            Subject = "Test Subject"
         };
         var handlerMock = new Mock<INotificationHandler>();
         handlerMock.Setup(h => h.CanHandle(notification)).Returns(true);
@@ -197,7 +211,9 @@ public class NotificationServiceTests
         // Arrange
         var notification = new MeetingConfirmedEmailNotification
         {
-            Meeting = TestData.GetMockMeeting(), RecipientUser = TestData.GetMockPatient(), Subject = "Test Subject"
+            Meeting = TestData.GetMockMeeting(),
+            RecipientUser = TestData.GetMockPatient(),
+            Subject = "Test Subject"
         };
         var service = new NotificationService(Enumerable.Empty<INotificationHandler>());
 
@@ -211,7 +227,9 @@ public class NotificationServiceTests
         // Arrange
         var notification = new MeetingConfirmedEmailNotification
         {
-            Meeting = TestData.GetMockMeeting(), RecipientUser = TestData.GetMockPatient(), Subject = "Test Subject"
+            Meeting = TestData.GetMockMeeting(),
+            RecipientUser = TestData.GetMockPatient(),
+            Subject = "Test Subject"
         };
         var handlerMock = new Mock<INotificationHandler>();
         handlerMock.Setup(h => h.CanHandle(notification)).Returns(false);
@@ -235,7 +253,9 @@ public class NotificationHandlerTests
         var handler = new EmailNotificationHandler(emailServiceMock.Object);
         var notification = new MeetingConfirmedEmailNotification
         {
-            Meeting = TestData.GetMockMeeting(), RecipientUser = TestData.GetMockPatient(), Subject = "Test Subject"
+            Meeting = TestData.GetMockMeeting(),
+            RecipientUser = TestData.GetMockPatient(),
+            Subject = "Test Subject"
         };
 
         // Act
@@ -268,7 +288,9 @@ public class NotificationHandlerTests
         var handler = new EmailNotificationHandler(emailServiceMock.Object);
         var notification = new MeetingConfirmedEmailNotification
         {
-            Meeting = TestData.GetMockMeeting(), RecipientUser = TestData.GetMockPatient(), Subject = "Test Subject"
+            Meeting = TestData.GetMockMeeting(),
+            RecipientUser = TestData.GetMockPatient(),
+            Subject = "Test Subject"
         };
 
         // Act
