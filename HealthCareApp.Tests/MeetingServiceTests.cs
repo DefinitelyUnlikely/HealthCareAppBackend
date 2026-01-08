@@ -3,17 +3,18 @@ using HealthCareAB_v1.Services;
 using HealthCareAB_v1.Repositories.Interfaces;
 using HealthCareAB_v1.DTOs;
 using System.Text.Json;
+using HealthCareAB_v1.Models;
 
 namespace HealthCareApp.Tests;
 
 public class MeetingServiceTests
 {
     [Fact]
-    public async Task InvalidMeetingId_ReturnsNotFoundMessage()
+    public async Task GetMeetingAsync_InvalidMeetingId_ReturnsNotFoundMessage()
     {
         // Arrange
         var mockMeetingRepository = new Mock<IMeetingRepository>();
-        mockMeetingRepository.Setup(repo => repo.GetAsync(It.IsAny<Guid>())).ReturnsAsync((HealthCareAB_v1.Models.Meeting?)null);
+        mockMeetingRepository.Setup(repo => repo.GetAsync(It.IsAny<Guid>())).ReturnsAsync((Meeting?)null);
 
         var meetingService = new MeetingService(mockMeetingRepository.Object);
 
@@ -26,7 +27,7 @@ public class MeetingServiceTests
     }
 
     [Fact]
-    public async Task ValidMeetingId_UserNotParticipant_ReturnsNotFoundMessage()
+    public async Task GetMeetingAsync_ValidMeetingId_UserNotParticipant_ReturnsNotFoundMessage()
     {
         // Arrange
         var meetingId = Guid.NewGuid();
@@ -34,11 +35,11 @@ public class MeetingServiceTests
         var patientId = 2;
         var nonParticipantUserId = 3;
 
-        var meeting = new HealthCareAB_v1.Models.Meeting
+        var meeting = new Meeting
         {
             Id = meetingId,
-            Caregiver = new HealthCareAB_v1.Models.User { Id = caregiverId },
-            Patient = new HealthCareAB_v1.Models.User { Id = patientId }
+            Caregiver = new User { Id = caregiverId },
+            Patient = new User { Id = patientId }
         };
 
         var mockMeetingRepository = new Mock<IMeetingRepository>();
@@ -55,14 +56,14 @@ public class MeetingServiceTests
     }
 
     [Fact]
-    public async Task ValidMeetingId_UserIsPatient_ReturnsMeeting()
+    public async Task GetMeetingAsync_ValidMeetingId_UserIsPatient_ReturnsMeeting()
     {
         // Arrange
         var meetingId = Guid.NewGuid();
         var caregiverId = 1;
         var patientId = 2;
 
-        var meeting = new HealthCareAB_v1.Models.Meeting
+        var meeting = new Meeting
         {
             Id = meetingId,
             CaregiverId = caregiverId,
@@ -86,14 +87,14 @@ public class MeetingServiceTests
     }
 
     [Fact]
-    public async Task ValidMeetingId_UserIsCaregiver_ReturnsMeeting()
+    public async Task GetMeetingAsync_ValidMeetingId_UserIsCaregiver_ReturnsMeeting()
     {
         // Arrange
         var meetingId = Guid.NewGuid();
         var caregiverId = 1;
         var patientId = 2;
 
-        var meeting = new HealthCareAB_v1.Models.Meeting
+        var meeting = new Meeting
         {
             Id = meetingId,
             CaregiverId = caregiverId,
@@ -117,7 +118,7 @@ public class MeetingServiceTests
     }
 
     [Fact]
-    public async Task ValidMeetingId_NonParticipantUser_IsAdmin_ReturnsMeeting()
+    public async Task GetMeetingAsync_ValidMeetingId_NonParticipantUser_IsAdmin_ReturnsMeeting()
     {
         // Arrange
         var meetingId = Guid.NewGuid();
@@ -125,7 +126,7 @@ public class MeetingServiceTests
         var patientId = 2;
         var nonParticipantUserId = 3;
 
-        var meeting = new HealthCareAB_v1.Models.Meeting
+        var meeting = new Meeting
         {
             Id = meetingId,
             CaregiverId = caregiverId,
@@ -146,5 +147,130 @@ public class MeetingServiceTests
         var expectedJson = JsonSerializer.Serialize(expected);
         var actualJson = JsonSerializer.Serialize(result);
         Assert.Equal(expectedJson, actualJson);
+        mockMeetingRepository.Verify(r => r.GetAsync(meetingId), Times.Once());
+    }
+
+    // ConfirmAsync tests
+
+    [Fact]
+    public async Task ConfirmMeeting_NullArgument_ThrowsArgumentNullException()
+    {
+        // Arrange
+        var mockMeetingRepository = new Mock<IMeetingRepository>();
+        var meetingService = new MeetingService(mockMeetingRepository.Object);
+
+        // Act and Assert
+        await Assert.ThrowsAsync<ArgumentNullException>(async () => await meetingService.ConfirmAsync(null!, 1));
+
+        // Assert
+        mockMeetingRepository.Verify(r => r.GetAsync(new Guid()), Times.Never());
+    }
+
+    [Fact]
+    public async Task ConfirmMeeting_InvalidId_ReturnsResultWithSuccessFalseAndMessageBookingexpired()
+    {
+        // Arrange
+        var mockMeetingRepository = new Mock<IMeetingRepository>();
+        mockMeetingRepository.Setup(repo => repo.GetAsync(It.IsAny<Guid>())).ReturnsAsync((Meeting?)null);
+
+        var meetingService = new MeetingService(mockMeetingRepository.Object);
+        var meetingId = Guid.NewGuid();
+        var request = new ConfirmMeetingDto { MeetingId = meetingId, PatientId = 1, Notes = "Some notes" };
+
+        // Act
+        var result = await meetingService.ConfirmAsync(request, 1);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal("Booking expired", result.Message);
+        mockMeetingRepository.Verify(r => r.GetAsync(meetingId), Times.Once());
+        mockMeetingRepository.Verify(r => r.SaveChangesAsync(), Times.Never());
+    }
+
+    [Fact]
+    public async Task ConfirmMeeting_PatientIdDoesNotMatch_ReturnsResultWithSuccessFalseAndMeetingNotFound()
+    {
+        // Arrange
+        var meetingId = Guid.NewGuid();
+        var meeting = new Meeting
+        {
+            Id = meetingId,
+            PatientId = 1,
+            Status = MeetingStatus.Pending
+        };
+
+        var mockMeetingRepository = new Mock<IMeetingRepository>();
+        mockMeetingRepository.Setup(repo => repo.GetAsync(meetingId)).ReturnsAsync(meeting);
+
+        var meetingService = new MeetingService(mockMeetingRepository.Object);
+        var request = new ConfirmMeetingDto { MeetingId = meetingId, PatientId = 2, Notes = "Some notes" }; // Mismatched PatientId
+
+        // Act
+        var result = await meetingService.ConfirmAsync(request, 2);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal("Meeting not found", result.Message);
+        mockMeetingRepository.Verify(r => r.GetAsync(meetingId), Times.Once());
+        mockMeetingRepository.Verify(r => r.SaveChangesAsync(), Times.Never());
+    }
+
+    [Fact]
+    public async Task ConfirmMeeting_StatusNotPending_ReturnsResultWithSuccessFalseAndMeetingAlreadyConfirmed()
+    {
+        // Arrange
+        var meetingId = Guid.NewGuid();
+        var meeting = new Meeting
+        {
+            Id = meetingId,
+            PatientId = 1,
+            Status = MeetingStatus.Confirmed
+        };
+
+        var mockMeetingRepository = new Mock<IMeetingRepository>();
+        mockMeetingRepository.Setup(repo => repo.GetAsync(meetingId)).ReturnsAsync(meeting);
+
+        var meetingService = new MeetingService(mockMeetingRepository.Object);
+        var request = new ConfirmMeetingDto { MeetingId = meetingId, PatientId = 1, Notes = "Some notes" }; // Already confirmed
+
+        // Act
+        var result = await meetingService.ConfirmAsync(request, 2);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal("Meeting not found", result.Message);
+        mockMeetingRepository.Verify(r => r.GetAsync(meetingId), Times.Once());
+        mockMeetingRepository.Verify(r => r.SaveChangesAsync(), Times.Never());
+    }
+
+    [Fact]
+    public async Task ConfirmMeeting_ValidRequest_ReturnsSuccessAndUpdatedMeeting()
+    {
+        // Arrange
+        var meetingId = Guid.NewGuid();
+        var meeting = new Meeting
+        {
+            Id = meetingId,
+            PatientId = 1,
+            Status = MeetingStatus.Pending,
+            ExpiresAt = DateTime.UtcNow.AddMinutes(15)
+        };
+
+        var mockMeetingRepository = new Mock<IMeetingRepository>();
+        mockMeetingRepository.Setup(repo => repo.GetAsync(meetingId)).ReturnsAsync(meeting);
+
+        var meetingService = new MeetingService(mockMeetingRepository.Object);
+        var request = new ConfirmMeetingDto { MeetingId = meetingId, PatientId = 1, Notes = "Some notes" }; // Already confirmed
+
+        // Act
+        var result = await meetingService.ConfirmAsync(request, 1);
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.Equal(request.Notes, result.Meeting!.Notes);
+        Assert.Equal(MeetingStatus.Confirmed, result.Meeting.Status);
+        Assert.Null(meeting.ExpiresAt);
+        mockMeetingRepository.Verify(r => r.GetAsync(meetingId), Times.Once());
+        mockMeetingRepository.Verify(r => r.SaveChangesAsync(), Times.Once());
     }
 }

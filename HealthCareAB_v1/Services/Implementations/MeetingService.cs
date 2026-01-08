@@ -64,25 +64,20 @@ public class MeetingService : IMeetingService
 
     public async Task<MeetingResponseDto> ConfirmAsync(ConfirmMeetingDto request, int userId)
     {
-        try
+        ArgumentNullException.ThrowIfNull(request);
+        var meeting = await _meetingRepository.GetAsync(request.MeetingId);
+        if (meeting is null)
         {
-            ArgumentNullException.ThrowIfNull(request);
-            var meeting = await _meetingRepository.GetAsync(request.MeetingId);
-            if (meeting is null)
-            {
-                return new MeetingResponseDto { Success = false, Message = "Booking expired" };
-            }
-            if (meeting.PatientId != userId) return new MeetingResponseDto { Success = false, Message = "Meeting not found" };
-
-            meeting.Notes = request.Notes;
-            meeting.Status = MeetingStatus.Confirmed;
-            await _meetingRepository.SaveChangesAsync();
-
-            return MeetingResponseDto.FromEntity(meeting);
+            return new MeetingResponseDto { Success = false, Message = "Booking expired" };
         }
-        catch (Exception)
-        {
-            return new MeetingResponseDto { Success = false, Message = "Server error" };
-        }
+        if (meeting.PatientId != userId) return new MeetingResponseDto { Success = false, Message = "Meeting not found" };
+        if (meeting.Status != MeetingStatus.Pending) return new MeetingResponseDto { Success = false, Message = "Meeting already confirmed" };
+
+        meeting.Notes = request.Notes;
+        meeting.Status = MeetingStatus.Confirmed;
+        meeting.ExpiresAt = null;
+        await _meetingRepository.SaveChangesAsync();
+
+        return MeetingResponseDto.FromEntity(meeting);
     }
 }
