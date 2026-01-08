@@ -7,5 +7,6 @@ public class ConfirmMeetingDto
     [Required]
     public int PatientId { get; set; }
     [Required]
-    public int MeetingId { get; set; }
+    public Guid MeetingId { get; set; }
+    public string Notes { get; set; } = string.Empty;
 }

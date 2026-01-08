@@ -74,4 +74,32 @@ public class MeetingController : ControllerBase
         }
         return Ok(result);
     }
+
+    /// <summary>
+    /// Gets a specific meeting by Id.
+    /// </summary>
+    [Authorize]
+    [HttpPut("{id}")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> ConfirmMeeting([FromBody] ConfirmMeetingDto request, Guid id)
+    {
+        if (request.MeetingId != id)
+        {
+            return BadRequest(new { message = "Meeting Id does not match" });
+        }
+
+        if (!int.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out int userId))
+        {
+            return Unauthorized(new { message = "Not authenticated" });
+        }
+
+        var result = await _meetingService.ConfirmAsync(request, userId);
+        if (!result.Success)
+        {
+            return NotFound(new { message = result.Message });
+        }
+        return Ok(result);
+    }
 }
