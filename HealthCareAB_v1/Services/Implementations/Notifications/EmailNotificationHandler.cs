@@ -15,7 +15,7 @@ public class EmailNotificationHandler(IEmailService emailService) : INotificatio
 
         var email = new IEmailService.Email
         {
-            To = emailNotification.SendToUser.Email,
+            To = emailNotification.RecipientUser.Email,
             Subject = emailNotification.Subject,
             HtmlContent = emailNotification.Html,
             PlainContent = emailNotification.Message
