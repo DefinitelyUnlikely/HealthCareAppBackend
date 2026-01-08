@@ -2,6 +2,7 @@ using HealthCareAB_v1.Models;
 using HealthCareAB_v1.DTOs;
 using HealthCareAB_v1.Repositories.Interfaces;
 using HealthCareAB_v1.Services.Interfaces;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace HealthCareAB_v1.Services;
@@ -34,10 +35,15 @@ public class MeetingService : IMeetingService
             Status = MeetingStatus.Pending,
         };
 
-        if (await _meetingRepository.TimeUnavailableAsync(newMeeting)) return new MeetingResponseDto() { Success = false, Message = "Meeting time unavailable" };
-
+        if (await _meetingRepository.TimeUnavailableAsync(newMeeting))
+        {
+            return new MeetingResponseDto() { Success = false, Message = "Meeting time unavailable" };
+        }
         await _meetingRepository.CreateAsync(newMeeting);
-        return new MeetingResponseDto() { Success = true, Meeting = newMeeting }; ;
+        await _meetingRepository.GetAsync(newMeeting.Id);
+        var response = MeetingResponseDto.FromEntity(newMeeting);
+
+        return response;
     }
 
     /// <summary>
@@ -47,13 +53,13 @@ public class MeetingService : IMeetingService
     {
         var meeting = await _meetingRepository.GetAsync(id);
         if (meeting is null) return new MeetingResponseDto { Success = false, Message = "Meeting not found" };
-        var isParticipant = meeting.Caregiver?.Id == userId || meeting.Patient?.Id == userId;
+        var isParticipant = meeting.CaregiverId == userId || meeting.PatientId == userId;
         if (!isParticipant && !isAdmin)
         {
             // Return not found even if meeting exists.
             return new MeetingResponseDto { Success = false, Message = "Meeting not found" };
         }
-        return new MeetingResponseDto { Success = true, Meeting = meeting };
+        return MeetingResponseDto.FromEntity(meeting);
     }
 
     public Task<Meeting> ConfirmAsync(ConfirmMeetingDto request)
