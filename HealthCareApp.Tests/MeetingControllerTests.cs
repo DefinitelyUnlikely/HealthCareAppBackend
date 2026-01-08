@@ -69,7 +69,7 @@ public class MeetingControllerTests
     {
         // Arrange
         var meetingId = Guid.NewGuid();
-        var meeting = new Meeting { Id = meetingId, Patient = new User { Id = 1 }, Caregiver = new User { Id = 2 } };
+        var meeting = new MeetingDto { Id = meetingId, };
 
         var mockService = new Mock<IMeetingService>();
         mockService

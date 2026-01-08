@@ -1,6 +1,8 @@
 using HealthCareAB_v1.Repositories.Interfaces;
 using HealthCareAB_v1.Models;
 
+using Microsoft.EntityFrameworkCore;
+
 namespace HealthCareAB_v1.Repositories;
 
 public class MeetingRepository : IMeetingRepository
@@ -12,8 +14,26 @@ public class MeetingRepository : IMeetingRepository
         _context = context ?? throw new ArgumentNullException(nameof(context));
     }
 
+    public async Task CreateAsync(Meeting meeting)
+    {
+        await _context.Meetings.AddAsync(meeting);
+        await _context.SaveChangesAsync();
+    }
     public async Task<Meeting?> GetAsync(Guid id)
     {
-        return await _context.Meetings.FindAsync(id);
+        return await _context.Meetings
+        .Include(m => m.Caregiver)
+        .Include(m => m.Patient)
+        .FirstOrDefaultAsync(m => m.Id == id);
+    }
+
+    public async Task<bool> TimeUnavailableAsync(Meeting meeting)
+    {
+        return await _context.Meetings.AnyAsync(m => m.CaregiverId == meeting.CaregiverId && m.StartTime < meeting.EndTime && m.EndTime > meeting.StartTime);
+    }
+
+    public async Task<int> SaveChangesAsync()
+    {
+        return await _context.SaveChangesAsync();
     }
 }
