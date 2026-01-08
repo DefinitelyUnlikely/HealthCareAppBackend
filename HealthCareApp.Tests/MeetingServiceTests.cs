@@ -1,6 +1,8 @@
 using Moq;
 using HealthCareAB_v1.Services;
 using HealthCareAB_v1.Repositories.Interfaces;
+using HealthCareAB_v1.DTOs;
+using System.Text.Json;
 
 namespace HealthCareApp.Tests;
 
@@ -63,9 +65,10 @@ public class MeetingServiceTests
         var meeting = new HealthCareAB_v1.Models.Meeting
         {
             Id = meetingId,
-            Caregiver = new HealthCareAB_v1.Models.User { Id = caregiverId },
-            Patient = new HealthCareAB_v1.Models.User { Id = patientId }
+            CaregiverId = caregiverId,
+            PatientId = patientId
         };
+        var expected = MeetingResponseDto.FromEntity(meeting);
 
         var mockMeetingRepository = new Mock<IMeetingRepository>();
         mockMeetingRepository.Setup(repo => repo.GetAsync(meetingId)).ReturnsAsync(meeting);
@@ -77,7 +80,9 @@ public class MeetingServiceTests
 
         // Assert
         Assert.True(result.Success);
-        Assert.Equal(meeting, result.Meeting);
+        var expectedJson = JsonSerializer.Serialize(expected);
+        var actualJson = JsonSerializer.Serialize(result);
+        Assert.Equal(expectedJson, actualJson);
     }
 
     [Fact]
@@ -91,9 +96,10 @@ public class MeetingServiceTests
         var meeting = new HealthCareAB_v1.Models.Meeting
         {
             Id = meetingId,
-            Caregiver = new HealthCareAB_v1.Models.User { Id = caregiverId },
-            Patient = new HealthCareAB_v1.Models.User { Id = patientId }
+            CaregiverId = caregiverId,
+            PatientId = patientId
         };
+        var expected = MeetingResponseDto.FromEntity(meeting);
 
         var mockMeetingRepository = new Mock<IMeetingRepository>();
         mockMeetingRepository.Setup(repo => repo.GetAsync(meetingId)).ReturnsAsync(meeting);
@@ -105,7 +111,9 @@ public class MeetingServiceTests
 
         // Assert
         Assert.True(result.Success);
-        Assert.Equal(meeting, result.Meeting);
+        var expectedJson = JsonSerializer.Serialize(expected);
+        var actualJson = JsonSerializer.Serialize(result);
+        Assert.Equal(expectedJson, actualJson);
     }
 
     [Fact]
@@ -120,9 +128,10 @@ public class MeetingServiceTests
         var meeting = new HealthCareAB_v1.Models.Meeting
         {
             Id = meetingId,
-            Caregiver = new HealthCareAB_v1.Models.User { Id = caregiverId },
-            Patient = new HealthCareAB_v1.Models.User { Id = patientId }
+            CaregiverId = caregiverId,
+            PatientId = patientId
         };
+        var expected = MeetingResponseDto.FromEntity(meeting);
 
         var mockMeetingRepository = new Mock<IMeetingRepository>();
         mockMeetingRepository.Setup(repo => repo.GetAsync(meetingId)).ReturnsAsync(meeting);
@@ -134,6 +143,8 @@ public class MeetingServiceTests
 
         // Assert
         Assert.True(result.Success);
-        Assert.Equal(meeting, result.Meeting);
+        var expectedJson = JsonSerializer.Serialize(expected);
+        var actualJson = JsonSerializer.Serialize(result);
+        Assert.Equal(expectedJson, actualJson);
     }
 }
