@@ -35,6 +35,10 @@ namespace HealthCareAB_v1.Repositories
 
         public DbSet<User> Users { get; set; }
         public DbSet<Meeting> Meetings { get; set; }
+        public DbSet<Caregiver> Caregivers { get; set; }
+        public DbSet<Patient> Patients { get; set; }
+        public DbSet<Availability> Availabilities { get; set; }
+        public DbSet<Feedback> Feedbacks { get; set; }
 
 
         public new Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
