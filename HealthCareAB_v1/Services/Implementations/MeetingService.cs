@@ -19,20 +19,25 @@ public class MeetingService : IMeetingService
     /// Creates a new meeting in the database and sets the status to pending.
     /// The meeting 
     /// </summary>
-    public async Task<Meeting> CreateAsync(CreateMeetingDto request)
+    public async Task<MeetingResponseDto> CreateAsync(CreateMeetingDto request)
     {
         ArgumentNullException.ThrowIfNull(request);
+        var endTime = request.StartTime.AddMinutes(30 * request.Slots);
 
         var newMeeting = new Meeting
         {
             StartTime = request.StartTime,
-            EndTime = request.StartTime.AddMinutes(30*request.Slots),
+            EndTime = endTime,
+            ExpiresAt = DateTime.UtcNow.AddMinutes(15),
             PatientId = request.PatientId,
             CaregiverId = request.CaregiverId,
             Status = MeetingStatus.Pending,
         };
+
+        if (await _meetingRepository.TimeUnavailableAsync(newMeeting)) return new MeetingResponseDto() { Success = false, Message = "Meeting time unavailable" };
+
         await _meetingRepository.CreateAsync(newMeeting);
-        return newMeeting;
+        return new MeetingResponseDto() { Success = true, Meeting = newMeeting }; ;
     }
 
     /// <summary>

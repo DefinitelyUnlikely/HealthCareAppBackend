@@ -19,6 +19,35 @@ namespace HealthCareAB_v1.Controllers
         }
 
         /// <summary>
+        /// Creates a temporary meeting
+        /// </summary>
+        [Authorize]
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> CreateMeeting([FromBody] CreateMeetingDto request)
+        {
+            if (!int.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out int userId))
+            {
+                return Unauthorized(new { message = "Not authenticated" });
+            }
+
+            bool isAdmin = User.IsInRole("Admin");
+            if (request.CaregiverId != userId && request.PatientId != userId && !isAdmin)
+            {
+                return Unauthorized(new { message = "Not authenticated" });
+            }
+
+            var result = await _meetingService.CreateAsync(request);
+            if (!result.Success || result.Meeting is null)
+            {
+                return Conflict(new { message = result.Message });
+            }
+            return CreatedAtAction(nameof(GetMeeting), new { id = result.Meeting.Id });
+        }
+
+        /// <summary>
         /// Gets a specific meeting by Id.
         /// </summary>
         [Authorize]
@@ -28,15 +57,12 @@ namespace HealthCareAB_v1.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetMeeting(Guid id)
         {
-            bool isAdmin = false;
-            var claimId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!int.TryParse(claimId, out int userId))
+
+            if (!int.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out int userId))
             {
                 return Unauthorized(new { message = "Not authenticated" });
             }
-            var claimRole = User.FindFirst(ClaimTypes.Role)?.Value;
-            if (claimRole is "Admin") isAdmin = true;
-
+            bool isAdmin = User.IsInRole("Admin");
 
             var result = await _meetingService.GetMeetingAsync(id, userId, isAdmin);
             if (!result.Success)

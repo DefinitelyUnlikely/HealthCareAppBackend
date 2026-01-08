@@ -1,5 +1,6 @@
 using HealthCareAB_v1.Repositories.Interfaces;
 using HealthCareAB_v1.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace HealthCareAB_v1.Repositories;
 
@@ -20,6 +21,11 @@ public class MeetingRepository : IMeetingRepository
     public async Task<Meeting?> GetAsync(Guid id)
     {
         return await _context.Meetings.FindAsync(id);
+    }
+
+    public async Task<bool> TimeUnavailableAsync(Meeting meeting)
+    {
+        return await _context.Meetings.AnyAsync(m => m.CaregiverId == meeting.CaregiverId && m.StartTime < meeting.EndTime && m.EndTime > meeting.StartTime);
     }
 
     public async Task<int> SaveChangesAsync()
