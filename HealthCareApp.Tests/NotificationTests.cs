@@ -175,16 +175,50 @@ public class NotificationServiceTests
     [Fact]
     public async Task SendNotificationAsync_WhenNotificationIsEmailNotification_CallsEmailHandler()
     {
+        // Arrange
+        var notification = new MeetingConfirmedEmailNotification
+        {
+            Meeting = TestData.GetMockMeeting(), RecipientUser = TestData.GetMockPatient(), Subject = "Test Subject"
+        };
+        var handlerMock = new Mock<INotificationHandler>();
+        handlerMock.Setup(h => h.CanHandle(notification)).Returns(true);
+        var service = new NotificationService([handlerMock.Object]);
+
+        // Act
+        await service.SendNotificationAsync(notification);
+
+        // Assert
+        handlerMock.Verify(h => h.HandleAsync(notification), Times.Once);
     }
 
     [Fact]
     public async Task SendNotificationAsync_ThrowsHandlerNotFoundException_WhenNoHandlers()
     {
+        // Arrange
+        var notification = new MeetingConfirmedEmailNotification
+        {
+            Meeting = TestData.GetMockMeeting(), RecipientUser = TestData.GetMockPatient(), Subject = "Test Subject"
+        };
+        var service = new NotificationService(Enumerable.Empty<INotificationHandler>());
+
+        // Act & Assert
+        await Assert.ThrowsAsync<HandlerNotFoundException>(() => service.SendNotificationAsync(notification));
     }
 
     [Fact]
     public async Task SendNotificationAsync_ThrowsHandlerNotFoundException_WhenNoHandlersForNotificationType()
     {
+        // Arrange
+        var notification = new MeetingConfirmedEmailNotification
+        {
+            Meeting = TestData.GetMockMeeting(), RecipientUser = TestData.GetMockPatient(), Subject = "Test Subject"
+        };
+        var handlerMock = new Mock<INotificationHandler>();
+        handlerMock.Setup(h => h.CanHandle(notification)).Returns(false);
+        var service = new NotificationService([handlerMock.Object]);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<HandlerNotFoundException>(() => service.SendNotificationAsync(notification));
     }
 
     // In the future, if we add more notification types with handlers, we need to add tests for those as well. 
@@ -194,17 +228,58 @@ public class NotificationServiceTests
 public class NotificationHandlerTests
 {
     [Fact]
-    public async Task EmailNotificationHandler_CanHandle_ReturnsTrueForEmailNotification()
+    public void EmailNotificationHandler_CanHandle_ReturnsTrueForEmailNotification()
     {
+        // Arrange
+        var emailServiceMock = new Mock<IEmailService>();
+        var handler = new EmailNotificationHandler(emailServiceMock.Object);
+        var notification = new MeetingConfirmedEmailNotification
+        {
+            Meeting = TestData.GetMockMeeting(), RecipientUser = TestData.GetMockPatient(), Subject = "Test Subject"
+        };
+
+        // Act
+        var result = handler.CanHandle(notification);
+
+        // Assert
+        Assert.True(result);
     }
 
     [Fact]
-    public async Task EmailNotificationHandler_CanHandle_ReturnsFalseForOtherNotification()
+    public void EmailNotificationHandler_CanHandle_ReturnsFalseForOtherNotification()
     {
+        // Arrange
+        var emailServiceMock = new Mock<IEmailService>();
+        var handler = new EmailNotificationHandler(emailServiceMock.Object);
+        var notification = new Notification { RecipientUser = TestData.GetMockPatient() };
+
+        // Act
+        var result = handler.CanHandle(notification);
+
+        // Assert
+        Assert.False(result);
     }
 
     [Fact]
     public async Task EmailNotificationHandler_HandleAsync_CallsEmailService_WhenNotificationIsEmailNotification()
     {
+        // Arrange
+        var emailServiceMock = new Mock<IEmailService>();
+        var handler = new EmailNotificationHandler(emailServiceMock.Object);
+        var notification = new MeetingConfirmedEmailNotification
+        {
+            Meeting = TestData.GetMockMeeting(), RecipientUser = TestData.GetMockPatient(), Subject = "Test Subject"
+        };
+
+        // Act
+        await handler.HandleAsync(notification);
+
+        // Assert
+        emailServiceMock.Verify(s => s.SendEmailAsync(It.Is<IEmailService.Email>(email =>
+            email.To == notification.RecipientUser.Email &&
+            email.Subject == notification.Subject &&
+            email.HtmlContent == notification.Html &&
+            email.PlainContent == notification.Message
+        )), Times.Once);
     }
 }
