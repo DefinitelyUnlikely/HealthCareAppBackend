@@ -19,6 +19,8 @@ public class MeetingResponseDto
                 StartTime = newMeeting.StartTime,
                 EndTime = newMeeting.EndTime,
                 Status = newMeeting.Status,
+                Canceled = newMeeting.Canceled,
+                Notes = newMeeting.Notes,
                 PatientName = newMeeting.Patient?.Username ?? string.Empty,
                 CaregiverName = newMeeting.Caregiver?.Username ?? string.Empty
             }
