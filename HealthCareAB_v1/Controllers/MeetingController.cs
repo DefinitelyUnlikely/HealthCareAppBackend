@@ -44,9 +44,6 @@ public class MeetingController : ControllerBase
         {
             return Conflict(new { message = result.Message });
         }
-        var url = Url.Action(nameof(GetMeeting), new { id = result.Meeting.Id });
-        Console.WriteLine(url);
-        Console.WriteLine(result);
         return CreatedAtAction(nameof(GetMeeting), new { id = result.Meeting.Id }, result);
     }
 
