@@ -14,7 +14,7 @@ namespace HealthCareAB_v1.Models
         public DateTime EndTime { get; set; }
         public DateTime? ExpiresAt { get; set; }
         [Required]
-        public bool Canceled { get; set; }
+        public bool Canceled { get; set; } = false;
         [Required]
         [Column(TypeName = "text")]
         public MeetingStatus Status { get; set; }
@@ -22,11 +22,11 @@ namespace HealthCareAB_v1.Models
         [Required]
         public int PatientId { get; set; }
         [ForeignKey(nameof(PatientId))]
-        public required User Patient { get; set; }
+        public User? Patient { get; set; }
         [Required]
         public int CaregiverId { get; set; }
         [ForeignKey(nameof(CaregiverId))]
-        public required User Caregiver { get; set; }
+        public User? Caregiver { get; set; }
     }
 
     public enum MeetingStatus

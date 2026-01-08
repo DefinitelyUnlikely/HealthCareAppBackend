@@ -14,11 +14,35 @@ public class MeetingService : IMeetingService
         _meetingRepository = meetingRepository ?? throw new ArgumentNullException(nameof(meetingRepository));
     }
 
+    /// <summary>
+    /// When the user selects a timeslot
+    /// Creates a new meeting in the database and sets the status to pending.
+    /// The meeting 
+    /// </summary>
+    public async Task<Meeting> CreateAsync(CreateMeetingDto request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var newMeeting = new Meeting
+        {
+            StartTime = request.StartTime,
+            EndTime = request.StartTime.AddMinutes(30*request.Slots),
+            PatientId = request.PatientId,
+            CaregiverId = request.CaregiverId,
+            Status = MeetingStatus.Pending,
+        };
+        await _meetingRepository.CreateAsync(newMeeting);
+        return newMeeting;
+    }
+
+    /// <summary>
+    /// Gets a meeting by Id.
+    /// </summary>
     public async Task<MeetingResponseDto> GetMeetingAsync(Guid id, int userId, bool isAdmin)
     {
         var meeting = await _meetingRepository.GetAsync(id);
         if (meeting is null) return new MeetingResponseDto { Success = false, Message = "Meeting not found" };
-        var isParticipant = meeting.Caregiver.Id == userId || meeting.Patient.Id == userId;
+        var isParticipant = meeting.Caregiver?.Id == userId || meeting.Patient?.Id == userId;
         if (!isParticipant && !isAdmin)
         {
             // Return not found even if meeting exists.
@@ -27,7 +51,7 @@ public class MeetingService : IMeetingService
         return new MeetingResponseDto { Success = true, Meeting = meeting };
     }
 
-    public async Task<Meeting> ConfirmAsynx(ConfirmMeetingDto meeting)
+    public Task<Meeting> ConfirmAsync(ConfirmMeetingDto request)
     {
         throw new NotImplementedException();
     }

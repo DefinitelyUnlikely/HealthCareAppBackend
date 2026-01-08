@@ -12,11 +12,10 @@ public class MeetingRepository : IMeetingRepository
         _context = context ?? throw new ArgumentNullException(nameof(context));
     }
 
-    public async Task<Meeting?> CreateAsync(Guid id)
+    public async Task CreateAsync(Meeting meeting)
     {
         await _context.Meetings.AddAsync(meeting);
         await _context.SaveChangesAsync();
-        return meeting;
     }
     public async Task<Meeting?> GetAsync(Guid id)
     {
