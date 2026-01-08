@@ -60,7 +60,7 @@ public static class TestData
     }
 }
 
-public class NotificationModel_EmailNotification_Tests
+public class NotificationModelEmailNotificationTests
 {
     [Fact]
     public void MeetingConfirmedEmailNotification_HasExpectedValues()
