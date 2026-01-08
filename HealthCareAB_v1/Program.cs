@@ -1,6 +1,9 @@
 using HealthCareAB_v1.Extensions;
+using HealthCareAB_v1.Models.Notification;
 using HealthCareAB_v1.Services.Implementations;
+using HealthCareAB_v1.Services.Implementations.Notifications;
 using HealthCareAB_v1.Services.Interfaces;
+using HealthCareAB_v1.Services.Interfaces.Notifications;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,9 +28,11 @@ builder.Services.AddCors(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-
+// Move these to the service extension file?
 builder.Services.AddSingleton<ISmtpClientFactory, SmtpClientFactory>();
 builder.Services.AddScoped<IEmailService, MimeKitEmailService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<INotificationHandler, EmailNotificationHandler>();
 
 var app = builder.Build();
 

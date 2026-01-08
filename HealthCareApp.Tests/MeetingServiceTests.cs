@@ -10,6 +10,86 @@ namespace HealthCareApp.Tests;
 public class MeetingServiceTests
 {
     [Fact]
+    public async Task CreateAsync_ValidMeeting_ReturnsSuccess()
+    {
+        // Arrange
+        var meetingDto = new CreateMeetingDto
+        {
+            CaregiverId = 1,
+            PatientId = 2,
+            StartTime = DateTime.Now.AddHours(1),
+        };
+        var expectedEndTime = meetingDto.StartTime.AddMinutes(30);
+
+        var mockMeetingRepository = new Mock<IMeetingRepository>();
+        mockMeetingRepository.Setup(repo => repo.TimeUnavailableAsync(It.IsAny<Meeting>())).ReturnsAsync(false);
+        mockMeetingRepository.Setup(repo => repo.CreateAsync(It.IsAny<Meeting>())).Returns(Task.CompletedTask);
+
+        var meetingService = new MeetingService(mockMeetingRepository.Object);
+
+        // Act
+        var result = await meetingService.CreateAsync(meetingDto);
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.Equal(expectedEndTime, result.Meeting!.EndTime);
+        mockMeetingRepository.Verify(repo => repo.TimeUnavailableAsync(It.IsAny<Meeting>()), Times.Once);
+        mockMeetingRepository.Verify(repo => repo.CreateAsync(It.IsAny<Meeting>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CreateMeetingAsync_OverlappingMeeting_ReturnsFailure()
+    {
+        // Arrange
+        var meetingDto = new CreateMeetingDto
+        {
+            CaregiverId = 1,
+            PatientId = 2,
+            StartTime = DateTime.Now.AddHours(1),
+        };
+
+        var mockMeetingRepository = new Mock<IMeetingRepository>();
+        mockMeetingRepository.Setup(repo => repo.TimeUnavailableAsync(It.IsAny<Meeting>())).ReturnsAsync(true);
+
+        var meetingService = new MeetingService(mockMeetingRepository.Object);
+
+        // Act
+        var result = await meetingService.CreateAsync(meetingDto);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal("Meeting time unavailable", result.Message);
+        mockMeetingRepository.Verify(repo => repo.TimeUnavailableAsync(It.IsAny<Meeting>()), Times.Once);
+        mockMeetingRepository.Verify(repo => repo.CreateAsync(It.IsAny<Meeting>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task CreateMeetingAsync_AdditionalSlots_ReturnsCorrectEndTime()
+    {
+        // Arrange
+        var meetingDto = new CreateMeetingDto
+        {
+            CaregiverId = 1,
+            PatientId = 2,
+            StartTime = DateTime.Now.AddHours(1),
+            Slots = 3,
+        };
+        var expectedEndTime = meetingDto.StartTime.AddMinutes(30 * meetingDto.Slots);
+
+        var mockMeetingRepository = new Mock<IMeetingRepository>();
+        mockMeetingRepository.Setup(repo => repo.TimeUnavailableAsync(It.IsAny<Meeting>())).ReturnsAsync(false);
+        mockMeetingRepository.Setup(repo => repo.CreateAsync(It.IsAny<Meeting>())).Returns(Task.CompletedTask);
+
+        var meetingService = new MeetingService(mockMeetingRepository.Object);
+
+        // Act
+        var result = await meetingService.CreateAsync(meetingDto);
+
+        // Assert
+        Assert.Equal(expectedEndTime, result.Meeting!.EndTime);
+    }
+
+    [Fact]
     public async Task GetMeetingAsync_InvalidMeetingId_ReturnsNotFoundMessage()
     {
         // Arrange
