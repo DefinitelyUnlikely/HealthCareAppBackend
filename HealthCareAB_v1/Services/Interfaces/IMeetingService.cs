@@ -6,6 +6,6 @@ namespace HealthCareAB_v1.Services.Interfaces;
 public interface IMeetingService
 {
     public Task<MeetingResponseDto> CreateAsync(CreateMeetingDto request);
-    public Task<Meeting> ConfirmAsync(ConfirmMeetingDto request);
+    public Task<MeetingResponseDto> ConfirmAsync(ConfirmMeetingDto request, int userId);
     public Task<MeetingResponseDto> GetMeetingAsync(Guid id, int userId, bool isAdmin);
 }
