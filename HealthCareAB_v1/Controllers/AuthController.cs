@@ -57,7 +57,7 @@ namespace HealthCareAB_v1.Controllers
             var cookieOptions = _authService.GetJwtCookieOptions();
             HttpContext.Response.Cookies.Append(CookieNames.Jwt, token, cookieOptions);
 
-           // return Ok(new { message = result.Message, username = result.Username, roles = result.Roles });
+           /// return Ok(new { message = result.Message, username = result.Username, roles = result.Roles });
            return Ok(new AuthResponseDto
         {
            Message = result.Message,
