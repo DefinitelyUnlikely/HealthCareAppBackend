@@ -63,7 +63,7 @@ public static class TestData
 public class NotificationModelEmailNotificationTests
 {
     [Fact]
-    public void MeetingConfirmedEmailNotification_HasExpectedValues()
+    public void MeetingConfirmedEmailNotification_HasExpectedValues_WhenCaregiverExists()
     {
         // Arrange
         var meeting = TestData.GetMockMeeting();
@@ -90,7 +90,35 @@ public class NotificationModelEmailNotificationTests
     }
 
     [Fact]
-    public void MeetingCancelledEmailNotification_HasExpectedValues()
+    public void MeetingConfirmedEmailNotification_HasExpectedValues_WhenCaregiverIsNull()
+    {
+        // Arrange
+        var meeting = TestData.GetMockMeeting();
+        meeting.Caregiver = null;
+
+        // Act
+        var notification = new MeetingConfirmedEmailNotification()
+        {
+            Meeting = meeting,
+            Subject = "Subject",
+            Html = "Html",
+            Message = "Message",
+            RecipientUser = meeting.Patient!
+        };
+
+        // Assert
+        Assert.Equal(meeting, notification.Meeting);
+        Assert.Equal(meeting.Patient!.Email, notification.RecipientUser.Email);
+        Assert.Equal(
+            "Hej, Möte bokat " + meeting.StartTime + ". Hälsningar HealthCare AB",
+            notification.Message);
+        Assert.Equal(
+            $"<p>Hej,</p><p>Möte bokat {meeting.StartTime}</p><p>Hälsningar HealthCare AB</p>",
+            notification.Html);
+    }
+
+    [Fact]
+    public void MeetingCancelledEmailNotification_HasExpectedValues_WhenCaregiverExists()
     {
         // Arrange
         var meeting = TestData.GetMockMeeting();
@@ -118,7 +146,35 @@ public class NotificationModelEmailNotificationTests
     }
 
     [Fact]
-    public void MeetingReminderEmailNotification_HasExpectedValues()
+    public void MeetingCancelledEmailNotification_HasExpectedValues_WhenCaregiverIsNull()
+    {
+        // Arrange
+        var meeting = TestData.GetMockMeeting();
+        meeting.Caregiver = null;
+
+        // Act
+        var notification = new MeetingCancelledEmailNotification()
+        {
+            Meeting = meeting,
+            Subject = "Subject",
+            Html = "Html",
+            Message = "Message",
+            RecipientUser = meeting.Patient!
+        };
+
+        // Assert
+        Assert.Equal(meeting, notification.Meeting);
+        Assert.Equal(meeting.Patient!.Email, notification.RecipientUser.Email);
+        Assert.Equal(
+            "Hej, Möte vid " + meeting.StartTime + " avbokat. Hälsningar HealthCare AB",
+            notification.Message);
+        Assert.Equal(
+            $"<p>Hej,</p><p>Möte vid {meeting.StartTime} avbokat</p><p>Hälsningar HealthCare AB</p>",
+            notification.Html);
+    }
+
+    [Fact]
+    public void MeetingReminderEmailNotification_HasExpectedValues_WhenCaregiverExists()
     {
         // Arrange
         var meeting = TestData.GetMockMeeting();
@@ -147,7 +203,36 @@ public class NotificationModelEmailNotificationTests
     }
 
     [Fact]
-    public void MeetingUpdatedEmailNotification_HasExpectedValues()
+    public void MeetingReminderEmailNotification_HasExpectedValues_WhenCaregiverIsNull()
+    {
+        // Arrange
+        var meeting = TestData.GetMockMeeting();
+        meeting.Canceled = true;
+        meeting.Caregiver = null;
+
+        // Act
+        var notification = new MeetingReminderEmailNotification()
+        {
+            Meeting = meeting,
+            Subject = "Subject",
+            Html = "Html",
+            Message = "Message",
+            RecipientUser = meeting.Patient!
+        };
+
+        // Assert
+        Assert.Equal(meeting, notification.Meeting);
+        Assert.Equal(meeting.Patient!.Email, notification.RecipientUser.Email);
+        Assert.Equal(
+            "Hej, Mötespåminnelse för möte vid " + meeting.StartTime + ". Hälsningar HealthCare AB",
+            notification.Message);
+        Assert.Equal(
+            $"<p>Hej,</p><p>Mötespåminnelse för möte vid {meeting.StartTime}</p><p>Hälsningar HealthCare AB</p>",
+            notification.Html);
+    }
+
+    [Fact]
+    public void MeetingUpdatedEmailNotification_HasExpectedValues_WhenCaregiverExists()
     {
         // Arrange
         var meeting = TestData.GetMockMeeting();
@@ -172,12 +257,48 @@ public class NotificationModelEmailNotificationTests
         Assert.Equal(meeting, notification.NewMeeting);
         Assert.Equal(meeting.Patient!.Email, notification.RecipientUser.Email);
         Assert.Equal(
-            "Hej, Möte uppdaterat " + oldMeeting.StartTime + " till " + meeting.StartTime + " på " +
+            "Hej, Möte uppdaterat från " + oldMeeting.StartTime + " till " + meeting.StartTime + " på " +
             meeting.Caregiver!.Address +
             ". Hälsningar HealthCare AB",
             notification.Message);
         Assert.Equal(
-            $"<p>Hej,</p><p>Möte uppdaterat {oldMeeting.StartTime} till {meeting.StartTime} på {meeting.Caregiver.Address}</p><p>Hälsningar HealthCare AB</p>",
+            $"<p>Hej,</p><p>Möte uppdaterat från {oldMeeting.StartTime} till {meeting.StartTime} på {meeting.Caregiver.Address}</p><p>Hälsningar HealthCare AB</p>",
+            notification.Html);
+    }
+
+    [Fact]
+    public void MeetingUpdatedEmailNotification_HasExpectedValues_WhenCaregiverIsNull()
+    {
+        // Arrange
+        var meeting = TestData.GetMockMeeting();
+        meeting.Caregiver = null;
+
+        var oldMeeting = TestData.GetMockMeeting();
+        oldMeeting.StartTime = DateTime.Now;
+        oldMeeting.EndTime = DateTime.Now.AddHours(1);
+        oldMeeting.Notes = "Gamla anteckningar";
+
+        // Act
+        var notification = new MeetingUpdatedEmailNotification()
+        {
+            OldMeeting = oldMeeting,
+            NewMeeting = meeting,
+            Subject = "Subject",
+            Html = "Html",
+            Message = "Message",
+            RecipientUser = meeting.Patient!
+        };
+
+        // Assert
+        Assert.Equal(oldMeeting, notification.OldMeeting);
+        Assert.Equal(meeting, notification.NewMeeting);
+        Assert.Equal(meeting.Patient!.Email, notification.RecipientUser.Email);
+        Assert.Equal(
+            "Hej, Möte uppdaterat från " + oldMeeting.StartTime + " till " + meeting.StartTime +
+            ". Hälsningar HealthCare AB",
+            notification.Message);
+        Assert.Equal(
+            $"<p>Hej,</p><p>Möte uppdaterat från {oldMeeting.StartTime} till {meeting.StartTime}</p><p>Hälsningar HealthCare AB</p>",
             notification.Html);
     }
 }
