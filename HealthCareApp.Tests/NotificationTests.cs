@@ -75,14 +75,14 @@ public class NotificationModelEmailNotificationTests
             Subject = "Subject",
             Html = "Html",
             Message = "Message",
-            RecipientUser = meeting.Patient
+            RecipientUser = meeting.Patient!
         };
 
         // Assert
         Assert.Equal(meeting, notification.Meeting);
-        Assert.Equal(meeting.Patient.Email, notification.RecipientUser.Email);
+        Assert.Equal(meeting.Patient!.Email, notification.RecipientUser.Email);
         Assert.Equal(
-            "Hej, Möte bokat " + meeting.StartTime + " på " + meeting.Caregiver.Address + ". Hälsningar HealthCare AB",
+            "Hej, Möte bokat " + meeting.StartTime + " på " + meeting.Caregiver!.Address + ". Hälsningar HealthCare AB",
             notification.Message);
         Assert.Equal(
             $"<p>Hej,</p><p>Möte bokat {meeting.StartTime} på {meeting.Caregiver.Address}</p><p>Hälsningar HealthCare AB</p>",
@@ -102,14 +102,14 @@ public class NotificationModelEmailNotificationTests
             Subject = "Subject",
             Html = "Html",
             Message = "Message",
-            RecipientUser = meeting.Patient
+            RecipientUser = meeting.Patient!
         };
 
         // Assert
         Assert.Equal(meeting, notification.Meeting);
-        Assert.Equal(meeting.Patient.Email, notification.RecipientUser.Email);
+        Assert.Equal(meeting.Patient!.Email, notification.RecipientUser.Email);
         Assert.Equal(
-            "Hej, Möte vid " + meeting.StartTime + " på " + meeting.Caregiver.Address +
+            "Hej, Möte vid " + meeting.StartTime + " på " + meeting.Caregiver!.Address +
             " avbokat. Hälsningar HealthCare AB",
             notification.Message);
         Assert.Equal(
@@ -131,14 +131,14 @@ public class NotificationModelEmailNotificationTests
             Subject = "Subject",
             Html = "Html",
             Message = "Message",
-            RecipientUser = meeting.Patient
+            RecipientUser = meeting.Patient!
         };
 
         // Assert
         Assert.Equal(meeting, notification.Meeting);
-        Assert.Equal(meeting.Patient.Email, notification.RecipientUser.Email);
+        Assert.Equal(meeting.Patient!.Email, notification.RecipientUser.Email);
         Assert.Equal(
-            "Hej, Mötespåminnelse för möte vid " + meeting.StartTime + " på " + meeting.Caregiver.Address +
+            "Hej, Mötespåminnelse för möte vid " + meeting.StartTime + " på " + meeting.Caregiver!.Address +
             ". Hälsningar HealthCare AB",
             notification.Message);
         Assert.Equal(
@@ -164,16 +164,16 @@ public class NotificationModelEmailNotificationTests
             Subject = "Subject",
             Html = "Html",
             Message = "Message",
-            RecipientUser = meeting.Patient
+            RecipientUser = meeting.Patient!
         };
 
         // Assert
         Assert.Equal(oldMeeting, notification.OldMeeting);
         Assert.Equal(meeting, notification.NewMeeting);
-        Assert.Equal(meeting.Patient.Email, notification.RecipientUser.Email);
+        Assert.Equal(meeting.Patient!.Email, notification.RecipientUser.Email);
         Assert.Equal(
             "Hej, Möte uppdaterat " + oldMeeting.StartTime + " till " + meeting.StartTime + " på " +
-            meeting.Caregiver.Address +
+            meeting.Caregiver!.Address +
             ". Hälsningar HealthCare AB",
             notification.Message);
         Assert.Equal(
