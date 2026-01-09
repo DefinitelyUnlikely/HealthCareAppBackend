@@ -91,7 +91,13 @@ namespace HealthCareApp.Tests
                 Expires = DateTimeOffset.UtcNow.AddDays(-1)
             });
 
+            // Asked the antigravity agent for help with how to set and find cookies in a unit test. 
             var httpContext = new DefaultHttpContext();
+            var requestCookiesMock = new Mock<IRequestCookieCollection>();
+            requestCookiesMock.Setup(c => c.ContainsKey(CookieNames.Jwt)).Returns(true);
+            requestCookiesMock.Setup(c => c[CookieNames.Jwt]).Returns("test-token");
+            httpContext.Request.Cookies = requestCookiesMock.Object;
+
             var controller = new AuthController(authServiceMock.Object)
             {
                 ControllerContext = new ControllerContext
@@ -103,7 +109,6 @@ namespace HealthCareApp.Tests
             // Act
             controller.Logout();
 
-            // Asked Antigravity's agent for help with how to check cookies in unit tests. 
             // Assert
             var setCookieHeader = httpContext.Response.Headers.SetCookie;
             Assert.True(setCookieHeader.Count > 0);
