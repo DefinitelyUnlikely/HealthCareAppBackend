@@ -158,223 +158,223 @@ public class AuthServiceTests
 
 
     [Fact]
-public async Task RegisterAsync_ReturnsSuccessFalse_WhenUsernameAlreadyExists()
-{
-    // Arrange
-    var userServiceMock = new Mock<IUserService>();
-    var jwtTokenServiceMock = new Mock<IJwtTokenService>();
-    var jwtSettingsMock = new Mock<IOptions<JwtSettings>>();
-    var environmentMock = new Mock<IWebHostEnvironment>();
-    var httpContextAccessorMock = new Mock<IHttpContextAccessor>();
-
-    jwtSettingsMock.Setup(s => s.Value).Returns(new JwtSettings());
-    environmentMock.Setup(e => e.EnvironmentName).Returns("Production");
-    
-    userServiceMock.Setup(s => s.ExistsByUsernameAsync("existinguser"))
-        .ReturnsAsync(true);
-
-    var authService = new AuthService(
-        userServiceMock.Object,
-        jwtTokenServiceMock.Object,
-        jwtSettingsMock.Object,
-        environmentMock.Object,
-        httpContextAccessorMock.Object);
-
-    var registerDto = new RegisterDto
+    public async Task RegisterAsync_ReturnsSuccessFalse_WhenUsernameAlreadyExists()
     {
-        Username = "existinguser",
-        Password = "password123",
-        Email = "test@example.com",
-        FirstName = "John",
-        LastName = "Doe",
-        PhoneNumber = "1234567890",
-        Address = "123 Main Street",
-        PersonalNumber = "1234567890"
-    };
+        // Arrange
+        var userServiceMock = new Mock<IUserService>();
+        var jwtTokenServiceMock = new Mock<IJwtTokenService>();
+        var jwtSettingsMock = new Mock<IOptions<JwtSettings>>();
+        var environmentMock = new Mock<IWebHostEnvironment>();
+        var httpContextAccessorMock = new Mock<IHttpContextAccessor>();
 
-    // Act
-    var result = await authService.RegisterAsync(registerDto);
+        jwtSettingsMock.Setup(s => s.Value).Returns(new JwtSettings());
+        environmentMock.Setup(e => e.EnvironmentName).Returns("Production");
 
-    // Assert
-    Assert.False(result.Success);
-    Assert.Equal("Username is already taken", result.Message);
-    userServiceMock.Verify(s => s.CreateUserAsync(It.IsAny<User>()), Times.Never());
-}
+        userServiceMock.Setup(s => s.ExistsByUsernameAsync("existinguser"))
+            .ReturnsAsync(true);
 
-[Fact]
-public async Task RegisterAsync_CreatesUserSuccessfully_WithDefaultUserRole()
-{
-    // Arrange
-    var userServiceMock = new Mock<IUserService>();
-    var jwtTokenServiceMock = new Mock<IJwtTokenService>();
-    var jwtSettingsMock = new Mock<IOptions<JwtSettings>>();
-    var environmentMock = new Mock<IWebHostEnvironment>();
-    var httpContextAccessorMock = new Mock<IHttpContextAccessor>();
+        var authService = new AuthService(
+            userServiceMock.Object,
+            jwtTokenServiceMock.Object,
+            jwtSettingsMock.Object,
+            environmentMock.Object,
+            httpContextAccessorMock.Object);
 
-    jwtSettingsMock.Setup(s => s.Value).Returns(new JwtSettings());
-    environmentMock.Setup(e => e.EnvironmentName).Returns("Production");
-    
-    userServiceMock.Setup(s => s.ExistsByUsernameAsync(It.IsAny<string>()))
-        .ReturnsAsync(false);
-    userServiceMock.Setup(s => s.HashPassword(It.IsAny<string>()))
-        .Returns("hashedPassword");
+        var registerDto = new RegisterDto
+        {
+            Username = "existinguser",
+            Password = "password123",
+            Email = "test@example.com",
+            FirstName = "John",
+            LastName = "Doe",
+            PhoneNumber = "1234567890",
+            Address = "123 Main Street",
+            PersonalNumber = "1234567890"
+        };
 
-    var authService = new AuthService(
-        userServiceMock.Object,
-        jwtTokenServiceMock.Object,
-        jwtSettingsMock.Object,
-        environmentMock.Object,
-        httpContextAccessorMock.Object);
+        // Act
+        var result = await authService.RegisterAsync(registerDto);
 
-    var registerDto = new RegisterDto
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal("Username is already taken", result.Message);
+        userServiceMock.Verify(s => s.CreateUserAsync(It.IsAny<User>()), Times.Never());
+    }
+
+    [Fact]
+    public async Task RegisterAsync_CreatesUserSuccessfully_WithDefaultUserRole()
     {
-        Username = "newuser",
-        Password = "password123",
-        Email = "test@example.com",
-        FirstName = "John",
-        LastName = "Doe",
-        PhoneNumber = "1234567890",
-        Address = "123 Main Street",
-        PersonalNumber = "1234567890"
-    };
+        // Arrange
+        var userServiceMock = new Mock<IUserService>();
+        var jwtTokenServiceMock = new Mock<IJwtTokenService>();
+        var jwtSettingsMock = new Mock<IOptions<JwtSettings>>();
+        var environmentMock = new Mock<IWebHostEnvironment>();
+        var httpContextAccessorMock = new Mock<IHttpContextAccessor>();
 
-    // Act
-    var result = await authService.RegisterAsync(registerDto);
+        jwtSettingsMock.Setup(s => s.Value).Returns(new JwtSettings());
+        environmentMock.Setup(e => e.EnvironmentName).Returns("Production");
 
-    // Assert
-    Assert.True(result.Success);
-    Assert.Equal("User registered successfully", result.Message);
-    Assert.Equal("newuser", result.Username);
-    Assert.NotNull(result.Roles);
-    Assert.Single(result.Roles);
-    Assert.Contains(Roles.User, result.Roles);
-    
-    userServiceMock.Verify(s => s.CreateUserAsync(It.Is<User>(u => 
-        u.Username == "newuser" && 
-        u.PasswordHash == "hashedPassword" &&
-        u.Roles.Count == 1 &&
-        u.Roles.Contains(Roles.User))), Times.Once());
-}
+        userServiceMock.Setup(s => s.ExistsByUsernameAsync(It.IsAny<string>()))
+            .ReturnsAsync(false);
+        userServiceMock.Setup(s => s.HashPassword(It.IsAny<string>()))
+            .Returns("hashedPassword");
 
-[Fact]
-public async Task RegisterAsync_CreatesUserSuccessfully_WithRequestedRoles()
-{
-    // Arrange
-    var userServiceMock = new Mock<IUserService>();
-    var jwtTokenServiceMock = new Mock<IJwtTokenService>();
-    var jwtSettingsMock = new Mock<IOptions<JwtSettings>>();
-    var environmentMock = new Mock<IWebHostEnvironment>();
-    var httpContextAccessorMock = new Mock<IHttpContextAccessor>();
+        var authService = new AuthService(
+            userServiceMock.Object,
+            jwtTokenServiceMock.Object,
+            jwtSettingsMock.Object,
+            environmentMock.Object,
+            httpContextAccessorMock.Object);
 
-    jwtSettingsMock.Setup(s => s.Value).Returns(new JwtSettings());
-    environmentMock.Setup(e => e.EnvironmentName).Returns("Production");
-    
-    userServiceMock.Setup(s => s.ExistsByUsernameAsync(It.IsAny<string>()))
-        .ReturnsAsync(false);
-    userServiceMock.Setup(s => s.HashPassword(It.IsAny<string>()))
-        .Returns("hashedPassword");
+        var registerDto = new RegisterDto
+        {
+            Username = "newuser",
+            Password = "password123",
+            Email = "test@example.com",
+            FirstName = "John",
+            LastName = "Doe",
+            PhoneNumber = "1234567890",
+            Address = "123 Main Street",
+            PersonalNumber = "1234567890"
+        };
 
-    var authService = new AuthService(
-        userServiceMock.Object,
-        jwtTokenServiceMock.Object,
-        jwtSettingsMock.Object,
-        environmentMock.Object,
-        httpContextAccessorMock.Object);
+        // Act
+        var result = await authService.RegisterAsync(registerDto);
 
-    var registerDto = new RegisterDto
+        // Assert
+        Assert.True(result.Success);
+        Assert.Equal("User registered successfully", result.Message);
+        Assert.Equal("newuser", result.Username);
+        Assert.NotNull(result.Roles);
+        Assert.Single(result.Roles);
+        Assert.Contains(Roles.User, result.Roles);
+
+        userServiceMock.Verify(s => s.CreateUserAsync(It.Is<User>(u =>
+            u.Username == "newuser" &&
+            u.PasswordHash == "hashedPassword" &&
+            u.Roles.Count == 1 &&
+            u.Roles.Contains(Roles.User))), Times.Once());
+    }
+
+    [Fact]
+    public async Task RegisterAsync_CreatesUserSuccessfully_WithRequestedRoles()
     {
-        Username = "adminuser",
-        Password = "password123",
-        Email = "admin@example.com",
-        FirstName = "Admin",
-        LastName = "User",
-        PhoneNumber = "1234567890",
-        Address = "123 Admin Street",
-        PersonalNumber = "1234567890",
-        Roles = new List<string> { Roles.Admin }
-    };
+        // Arrange
+        var userServiceMock = new Mock<IUserService>();
+        var jwtTokenServiceMock = new Mock<IJwtTokenService>();
+        var jwtSettingsMock = new Mock<IOptions<JwtSettings>>();
+        var environmentMock = new Mock<IWebHostEnvironment>();
+        var httpContextAccessorMock = new Mock<IHttpContextAccessor>();
 
-    // Act
-    var result = await authService.RegisterAsync(registerDto);
+        jwtSettingsMock.Setup(s => s.Value).Returns(new JwtSettings());
+        environmentMock.Setup(e => e.EnvironmentName).Returns("Production");
 
-    // Assert
-    Assert.True(result.Success);
-    Assert.Equal("User registered successfully", result.Message);
-    Assert.Equal("adminuser", result.Username);
-    Assert.NotNull(result.Roles);
-    Assert.Single(result.Roles);
-    Assert.Contains(Roles.Admin, result.Roles);
-    
-    userServiceMock.Verify(s => s.CreateUserAsync(It.Is<User>(u => 
-        u.Username == "adminuser" && 
-        u.Roles.Contains(Roles.Admin))), Times.Once());
-}
+        userServiceMock.Setup(s => s.ExistsByUsernameAsync(It.IsAny<string>()))
+            .ReturnsAsync(false);
+        userServiceMock.Setup(s => s.HashPassword(It.IsAny<string>()))
+            .Returns("hashedPassword");
 
-[Fact]
-public async Task RegisterAsync_ThrowsArgumentNullException_WhenRegisterDtoIsNull()
-{
-    // Arrange
-    var userServiceMock = new Mock<IUserService>();
-    var jwtTokenServiceMock = new Mock<IJwtTokenService>();
-    var jwtSettingsMock = new Mock<IOptions<JwtSettings>>();
-    var environmentMock = new Mock<IWebHostEnvironment>();
-    var httpContextAccessorMock = new Mock<IHttpContextAccessor>();
+        var authService = new AuthService(
+            userServiceMock.Object,
+            jwtTokenServiceMock.Object,
+            jwtSettingsMock.Object,
+            environmentMock.Object,
+            httpContextAccessorMock.Object);
 
-    jwtSettingsMock.Setup(s => s.Value).Returns(new JwtSettings());
-    
-    var authService = new AuthService(
-        userServiceMock.Object,
-        jwtTokenServiceMock.Object,
-        jwtSettingsMock.Object,
-        environmentMock.Object,
-        httpContextAccessorMock.Object);
+        var registerDto = new RegisterDto
+        {
+            Username = "adminuser",
+            Password = "password123",
+            Email = "admin@example.com",
+            FirstName = "Admin",
+            LastName = "User",
+            PhoneNumber = "1234567890",
+            Address = "123 Admin Street",
+            PersonalNumber = "1234567890",
+            Roles = new List<string> { Roles.Admin }
+        };
 
-    // Act & Assert
-    await Assert.ThrowsAsync<ArgumentNullException>(() => 
-        authService.RegisterAsync(null!));
-}
+        // Act
+        var result = await authService.RegisterAsync(registerDto);
 
-[Fact]
-public async Task RegisterAsync_CallsHashPassword_WithCorrectPassword()
-{
-    // Arrange
-    var userServiceMock = new Mock<IUserService>();
-    var jwtTokenServiceMock = new Mock<IJwtTokenService>();
-    var jwtSettingsMock = new Mock<IOptions<JwtSettings>>();
-    var environmentMock = new Mock<IWebHostEnvironment>();
-    var httpContextAccessorMock = new Mock<IHttpContextAccessor>();
+        // Assert
+        Assert.True(result.Success);
+        Assert.Equal("User registered successfully", result.Message);
+        Assert.Equal("adminuser", result.Username);
+        Assert.NotNull(result.Roles);
+        Assert.Single(result.Roles);
+        Assert.Contains(Roles.Admin, result.Roles);
 
-    jwtSettingsMock.Setup(s => s.Value).Returns(new JwtSettings());
-    environmentMock.Setup(e => e.EnvironmentName).Returns("Production");
-    
-    userServiceMock.Setup(s => s.ExistsByUsernameAsync(It.IsAny<string>()))
-        .ReturnsAsync(false);
-    userServiceMock.Setup(s => s.HashPassword("mySecurePassword123"))
-        .Returns("hashedPassword");
+        userServiceMock.Verify(s => s.CreateUserAsync(It.Is<User>(u =>
+            u.Username == "adminuser" &&
+            u.Roles.Contains(Roles.Admin))), Times.Once());
+    }
 
-    var authService = new AuthService(
-        userServiceMock.Object,
-        jwtTokenServiceMock.Object,
-        jwtSettingsMock.Object,
-        environmentMock.Object,
-        httpContextAccessorMock.Object);
-
-    var registerDto = new RegisterDto
+    [Fact]
+    public async Task RegisterAsync_ThrowsArgumentNullException_WhenRegisterDtoIsNull()
     {
-        Username = "testuser",
-        Password = "mySecurePassword123",
-        Email = "test@example.com",
-        FirstName = "Test",
-        LastName = "User",
-        PhoneNumber = "1234567890",
-        Address = "123 Test Street",
-        PersonalNumber = "1234567890"
-    };
+        // Arrange
+        var userServiceMock = new Mock<IUserService>();
+        var jwtTokenServiceMock = new Mock<IJwtTokenService>();
+        var jwtSettingsMock = new Mock<IOptions<JwtSettings>>();
+        var environmentMock = new Mock<IWebHostEnvironment>();
+        var httpContextAccessorMock = new Mock<IHttpContextAccessor>();
 
-    // Act
-    await authService.RegisterAsync(registerDto);
+        jwtSettingsMock.Setup(s => s.Value).Returns(new JwtSettings());
 
-    // Assert
-    userServiceMock.Verify(s => s.HashPassword("mySecurePassword123"), Times.Once());
-}
+        var authService = new AuthService(
+            userServiceMock.Object,
+            jwtTokenServiceMock.Object,
+            jwtSettingsMock.Object,
+            environmentMock.Object,
+            httpContextAccessorMock.Object);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentNullException>(() =>
+            authService.RegisterAsync(null!));
+    }
+
+    [Fact]
+    public async Task RegisterAsync_CallsHashPassword_WithCorrectPassword()
+    {
+        // Arrange
+        var userServiceMock = new Mock<IUserService>();
+        var jwtTokenServiceMock = new Mock<IJwtTokenService>();
+        var jwtSettingsMock = new Mock<IOptions<JwtSettings>>();
+        var environmentMock = new Mock<IWebHostEnvironment>();
+        var httpContextAccessorMock = new Mock<IHttpContextAccessor>();
+
+        jwtSettingsMock.Setup(s => s.Value).Returns(new JwtSettings());
+        environmentMock.Setup(e => e.EnvironmentName).Returns("Production");
+
+        userServiceMock.Setup(s => s.ExistsByUsernameAsync(It.IsAny<string>()))
+            .ReturnsAsync(false);
+        userServiceMock.Setup(s => s.HashPassword("mySecurePassword123"))
+            .Returns("hashedPassword");
+
+        var authService = new AuthService(
+            userServiceMock.Object,
+            jwtTokenServiceMock.Object,
+            jwtSettingsMock.Object,
+            environmentMock.Object,
+            httpContextAccessorMock.Object);
+
+        var registerDto = new RegisterDto
+        {
+            Username = "testuser",
+            Password = "mySecurePassword123",
+            Email = "test@example.com",
+            FirstName = "Test",
+            LastName = "User",
+            PhoneNumber = "1234567890",
+            Address = "123 Test Street",
+            PersonalNumber = "1234567890"
+        };
+
+        // Act
+        await authService.RegisterAsync(registerDto);
+
+        // Assert
+        userServiceMock.Verify(s => s.HashPassword("mySecurePassword123"), Times.Once());
+    }
 }
