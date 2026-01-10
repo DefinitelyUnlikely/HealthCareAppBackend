@@ -353,4 +353,97 @@ public class MeetingServiceTests
         mockMeetingRepository.Verify(r => r.GetAsync(meetingId), Times.Once());
         mockMeetingRepository.Verify(r => r.SaveChangesAsync(), Times.Once());
     }
+
+    [Fact]
+    public async Task CancelAsync_NullRequest_ThrowsArgumentNullException()
+    {
+        var mockRepo = new Mock<IMeetingRepository>();
+        var service = new MeetingService(mockRepo.Object);
+        await Assert.ThrowsAsync<ArgumentNullException>(() => service.CancelAsync(null!, 1));
+    }
+
+    [Fact]
+    public async Task CancelAsync_MeetingNotFound_ReturnsError()
+    {
+        var mockRepo = new Mock<IMeetingRepository>();
+        mockRepo.Setup(r => r.GetAsync(It.IsAny<Guid>())).ReturnsAsync((Meeting?)null);
+        var service = new MeetingService(mockRepo.Object);
+
+        var result = await service.CancelAsync(new CancelMeetingDto { MeetingId = Guid.NewGuid() }, 1);
+
+        Assert.False(result.Success);
+        Assert.Equal("Meeting not found", result.Message);
+    }
+
+    [Fact]
+    public async Task CancelAsync_UserNotPatient_ReturnsError()
+    {
+        var meeting = new Meeting { PatientId = 1 };
+        var mockRepo = new Mock<IMeetingRepository>();
+        mockRepo.Setup(r => r.GetAsync(It.IsAny<Guid>())).ReturnsAsync(meeting);
+        var service = new MeetingService(mockRepo.Object);
+
+        var result = await service.CancelAsync(new CancelMeetingDto { MeetingId = Guid.NewGuid() }, 2);
+
+        Assert.False(result.Success);
+        Assert.Equal("Invalid user", result.Message);
+    }
+
+    [Fact]
+    public async Task CancelAsync_MeetingNotConfirmed_ReturnsError()
+    {
+        var meeting = new Meeting { PatientId = 1, Status = MeetingStatus.Pending };
+        var mockRepo = new Mock<IMeetingRepository>();
+        mockRepo.Setup(r => r.GetAsync(It.IsAny<Guid>())).ReturnsAsync(meeting);
+        var service = new MeetingService(mockRepo.Object);
+
+        var result = await service.CancelAsync(new CancelMeetingDto { MeetingId = Guid.NewGuid() }, 1);
+
+        Assert.False(result.Success);
+        Assert.Equal("Can only cancel confirmed meetings", result.Message);
+    }
+
+    [Fact]
+    public async Task CancelAsync_MeetingLessThan24HoursAway_ReturnsError()
+    {
+        var meeting = new Meeting
+        {
+            PatientId = 1,
+            Status = MeetingStatus.Confirmed,
+            StartTime = DateTime.Now.AddHours(10)
+        };
+        var mockRepo = new Mock<IMeetingRepository>();
+        mockRepo.Setup(r => r.GetAsync(It.IsAny<Guid>())).ReturnsAsync(meeting);
+        var service = new MeetingService(mockRepo.Object);
+
+        var result = await service.CancelAsync(new CancelMeetingDto { MeetingId = Guid.NewGuid() }, 1);
+
+        Assert.False(result.Success);
+        Assert.Equal("Can only cancel meetings at least 24 hours ahead", result.Message);
+    }
+
+    [Fact]
+    public async Task CancelAsync_ValidRequest_CancelsMeeting()
+    {
+        var meetingId = Guid.NewGuid();
+        var meeting = new Meeting
+        {
+            Id = meetingId,
+            PatientId = 1,
+            Status = MeetingStatus.Confirmed,
+            StartTime = DateTime.Now.AddHours(24).AddSeconds(1),
+            Canceled = false
+        };
+        var mockRepo = new Mock<IMeetingRepository>();
+        mockRepo.Setup(r => r.GetAsync(meetingId)).ReturnsAsync(meeting);
+        var service = new MeetingService(mockRepo.Object);
+
+        var request = new CancelMeetingDto { MeetingId = meetingId, Notes = "Sorry" };
+        var result = await service.CancelAsync(request, 1);
+
+        Assert.True(result.Success);
+        Assert.True(meeting.Canceled);
+        Assert.Equal("Sorry", meeting.Notes);
+        mockRepo.Verify(r => r.SaveChangesAsync(), Times.Once);
+    }
 }

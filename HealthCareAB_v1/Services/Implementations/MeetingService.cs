@@ -95,15 +95,15 @@ public class MeetingService : IMeetingService
         {
             return new MeetingResponseDto { Success = false, Message = "Can only cancel confirmed meetings" };
         }
-        if (meeting.StartTime > DateTime.Now.AddDays(1)) // We don't care about DST issues
+        if (meeting.StartTime < DateTime.Now.AddHours(25)) // Extra lenience because of DST.
         {
-            return new MeetingResponseDto { Success = false, Message = "Can only cancel meetings within 24 hours" };
+            return new MeetingResponseDto { Success = false, Message = "Can only cancel meetings at least 24 hours ahead" };
         }
 
         meeting.Canceled = true;
         meeting.Notes = request.Notes;
         await _meetingRepository.SaveChangesAsync();
 
-        return new MeetingResponseDto { Success = false, Message = "Not implemented" };
+        return MeetingResponseDto.FromEntity(meeting);
     }
 }
