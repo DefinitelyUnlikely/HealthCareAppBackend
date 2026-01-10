@@ -3,13 +3,12 @@ using HealthCareAB_v1.DTOs;
 using HealthCareAB_v1.Repositories.Interfaces;
 using HealthCareAB_v1.Services.Interfaces;
 
-using Microsoft.EntityFrameworkCore;
-
 namespace HealthCareAB_v1.Services;
 
 public class MeetingService : IMeetingService
 {
     private readonly IMeetingRepository _meetingRepository;
+
     public MeetingService(IMeetingRepository meetingRepository)
     {
         _meetingRepository = meetingRepository ?? throw new ArgumentNullException(nameof(meetingRepository));
@@ -79,5 +78,32 @@ public class MeetingService : IMeetingService
         await _meetingRepository.SaveChangesAsync();
 
         return MeetingResponseDto.FromEntity(meeting);
+    }
+    public async Task<MeetingResponseDto> CancelAsync(CancelMeetingDto request, int userId)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var meeting = await _meetingRepository.GetAsync(request.MeetingId);
+        if (meeting is null)
+        {
+            return new MeetingResponseDto { Success = false, Message = "Meeting not found" };
+        }
+        if (meeting.PatientId != userId)
+        {
+            return new MeetingResponseDto { Success = false, Message = "Invalid user" };
+        }
+        if (meeting.Status != MeetingStatus.Confirmed)
+        {
+            return new MeetingResponseDto { Success = false, Message = "Can only cancel confirmed meetings" };
+        }
+        if (meeting.StartTime > DateTime.Now.AddDays(1)) // We don't care about DST issues
+        {
+            return new MeetingResponseDto { Success = false, Message = "Can only cancel meetings within 24 hours" };
+        }
+
+        meeting.Canceled = true;
+        meeting.Notes = request.Notes;
+        await _meetingRepository.SaveChangesAsync();
+
+        return new MeetingResponseDto { Success = false, Message = "Not implemented" };
     }
 }

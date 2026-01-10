@@ -99,4 +99,32 @@ public class MeetingController : ControllerBase
         }
         return Ok(result);
     }
+
+    /// <summary>
+    /// Cancels a specific meeting by Id. Requires notes to be set.
+    /// </summary>
+    [Authorize]
+    [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> CancelMeeting([FromBody] CancelMeetingDto request, Guid id)
+    {
+        if (request.MeetingId != id)
+        {
+            return BadRequest(new { message = "Meeting Id does not match" });
+        }
+
+        if (!int.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out int userId))
+        {
+            return Unauthorized(new { message = "Not authenticated" });
+        }
+
+        var result = await _meetingService.CancelAsync(request, userId);
+        if (!result.Success)
+        {
+            return NotFound(new { message = result.Message });
+        }
+        return NoContent();
+    }
 }
