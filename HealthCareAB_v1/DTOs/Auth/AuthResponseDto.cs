@@ -6,7 +6,6 @@ namespace HealthCareAB_v1.DTOs
         public string? Message { get; set; }
         public string? Username { get; set; }
         public List<string>? Roles { get; set; }
-        public string Token { get; set; } = null!;
     }
 }
 
