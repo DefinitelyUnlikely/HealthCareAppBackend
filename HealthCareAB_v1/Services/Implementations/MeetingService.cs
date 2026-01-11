@@ -90,6 +90,7 @@ public class MeetingService : IMeetingService
         if (meeting.Patient is null)
         {
             // This should not be null, but if it is, just return the meeting.
+            // Won't be any patient to notify anyway then.
             return MeetingResponseDto.FromEntity(meeting);
         }
 
