@@ -295,8 +295,7 @@ public class MeetingServiceTests
         mockMeetingRepository.Setup(repo => repo.GetAsync(meetingId)).ReturnsAsync(meeting);
 
         var meetingService = new MeetingService(mockMeetingRepository.Object, mockNotificationService.Object);
-        var request = new ConfirmMeetingDto
-            { MeetingId = meetingId, PatientId = 2, Notes = "Some notes" }; // Mismatched PatientId
+        var request = new ConfirmMeetingDto { MeetingId = meetingId, PatientId = 2, Notes = "Some notes" }; // Mismatched PatientId
 
         // Act
         var result = await meetingService.ConfirmAsync(request, 2);
@@ -325,8 +324,7 @@ public class MeetingServiceTests
         mockMeetingRepository.Setup(repo => repo.GetAsync(meetingId)).ReturnsAsync(meeting);
 
         var meetingService = new MeetingService(mockMeetingRepository.Object, mockNotificationService.Object);
-        var request = new ConfirmMeetingDto
-            { MeetingId = meetingId, PatientId = 1, Notes = "Some notes" }; // Already confirmed
+        var request = new ConfirmMeetingDto { MeetingId = meetingId, PatientId = 1, Notes = "Some notes" }; // Already confirmed
 
         // Act
         var result = await meetingService.ConfirmAsync(request, 2);
@@ -356,8 +354,7 @@ public class MeetingServiceTests
         mockMeetingRepository.Setup(repo => repo.GetAsync(meetingId)).ReturnsAsync(meeting);
 
         var meetingService = new MeetingService(mockMeetingRepository.Object, mockNotificationService.Object);
-        var request = new ConfirmMeetingDto
-            { MeetingId = meetingId, PatientId = 1, Notes = "Some notes" }; // Already confirmed
+        var request = new ConfirmMeetingDto { MeetingId = meetingId, PatientId = 1, Notes = "Some notes" }; // Already confirmed
 
         // Act
         var result = await meetingService.ConfirmAsync(request, 1);
