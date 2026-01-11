@@ -106,15 +106,18 @@ public class MeetingController : ControllerBase
     [Authorize]
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> CancelMeeting([FromBody] CancelMeetingDto request, Guid id)
     {
+        if (String.IsNullOrEmpty(request.Notes))
+        {
+            return BadRequest(new { message = "Must provide reason for cancellation" });
+        }
         if (request.MeetingId != id)
         {
             return BadRequest(new { message = "Meeting Id does not match" });
         }
-
         if (!int.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out int userId))
         {
             return Unauthorized(new { message = "Not authenticated" });
@@ -123,7 +126,7 @@ public class MeetingController : ControllerBase
         var result = await _meetingService.CancelAsync(request, userId);
         if (!result.Success)
         {
-            return NotFound(new { message = result.Message });
+            return BadRequest(new { message = result.Message });
         }
         return NoContent();
     }
