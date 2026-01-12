@@ -18,6 +18,11 @@ namespace HealthCareAB_v1.Services
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
+          public async Task<User?> GetUserByIdAsync(int userId)
+        {
+            return await _context.Users.FindAsync(userId);
+        }
+
         /// <inheritdoc />
         public async Task<bool> ExistsByUsernameAsync(string username)
         {
