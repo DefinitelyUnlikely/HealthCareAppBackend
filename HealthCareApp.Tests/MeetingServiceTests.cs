@@ -513,4 +513,47 @@ public class MeetingServiceTests
         Assert.Equal("Sorry", meeting.Notes);
         mockRepo.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
+
+    [Fact]
+    public async Task UpdateAsync_NullRequest_ThrowsArgumentNullException()
+    {
+        // Arrange
+        UpdateMeetingDto request = null!;
+        var mockRepo = new Mock<IMeetingRepository>();
+        var mockNotificationService = new Mock<INotificationService>();
+        var service = new MeetingService(mockRepo.Object, mockNotificationService.Object);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentNullException>(() => service.UpdateAsync(request, 1));
+    }
+
+    [Fact]
+    public async Task UpdateAsync_UpdateNotes_UpdatesNotesOfExistingMeeting()
+    {
+        // Arrange
+        var meetingId = Guid.NewGuid();
+        int userId = 1;
+        var meeting = new Meeting
+        {
+            Id = meetingId,
+            PatientId = userId,
+            StartTime = DateTime.Now.AddHours(24).AddSeconds(1),
+            Notes = "Old notes"
+        };
+        var mockRepo = new Mock<IMeetingRepository>();
+        var mockNotificationService = new Mock<INotificationService>();
+        mockRepo.Setup(r => r.GetAsync(meetingId)).ReturnsAsync(meeting);
+        var service = new MeetingService(mockRepo.Object, mockNotificationService.Object);
+        var request = new UpdateMeetingDto { MeetingId = meetingId, Notes = "Updated notes" };
+
+        // Act
+        var result = await service.UpdateAsync(request, userId);
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.True(meeting.Notes == request.Notes);
+        mockRepo.Verify(r => r.GetAsync(meetingId), Times.Once);
+        mockRepo.Verify(r => r.SaveChangesAsync(), Times.Once);
+        mockRepo.Verify(r => r.CreateAsync(It.IsAny<Meeting>()), Times.Never);
+    }
 }
