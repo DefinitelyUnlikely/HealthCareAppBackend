@@ -14,9 +14,9 @@ public class CreateFeedbackDto
 
 public class UpdateFeedbackDto
 {
-    public string? Review { get; set; }  
+    public string? Review { get; set; }
     [Range(1, 5)]
-    public int? Rating { get; set; }  
+    public int? Rating { get; set; }
 }
 
 public class FeedbackResponseDto
@@ -27,5 +27,5 @@ public class FeedbackResponseDto
     public required string PatientName { get; set; }
     public required string CaregiverName { get; set; }
     public required Guid MeetingId { get; set; }
-    public DateTime CreatedAt { get; set; } 
+    public DateTime CreatedAt { get; set; }
 }

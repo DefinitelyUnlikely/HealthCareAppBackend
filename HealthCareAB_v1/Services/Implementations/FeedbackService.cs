@@ -9,18 +9,18 @@ public class FeedbackService : IFeedbackService
 {
     private readonly IFeedbackRepository _feedbackRepository;
     private readonly IUserService _userService;
-    private readonly IMeetingRepository _meetingRepository;  
+    private readonly IMeetingRepository _meetingRepository;
 
     public FeedbackService(
         IFeedbackRepository feedbackRepository,
         IUserService userService,
-        IMeetingRepository meetingRepository) 
+        IMeetingRepository meetingRepository)
     {
         _feedbackRepository = feedbackRepository;
         _userService = userService;
         _meetingRepository = meetingRepository;
     }
- public async Task<FeedbackResponseDto> CreateFeedbackAsync(CreateFeedbackDto dto, int currentUserId)
+    public async Task<FeedbackResponseDto> CreateFeedbackAsync(CreateFeedbackDto dto, int currentUserId)
     {
         // Validates the user
         var user = await _userService.GetUserByIdAsync(currentUserId);
@@ -31,7 +31,7 @@ public class FeedbackService : IFeedbackService
         var meeting = await _meetingRepository.GetAsync(dto.MeetingId);
         if (meeting == null)
             throw new ArgumentException("Meeting not found");
-        
+
         if (meeting.PatientId != currentUserId)
             throw new UnauthorizedAccessException("You can only give feedback for your own meetings");
 
@@ -43,7 +43,7 @@ public class FeedbackService : IFeedbackService
             Rating = dto.Rating,
             MeetingId = dto.MeetingId,
             PatientId = currentUserId,
-            CaregiverId = meeting.CaregiverId  
+            CaregiverId = meeting.CaregiverId
         };
 
         var createdFeedback = await _feedbackRepository.CreateFeedbackAsync(feedback);
@@ -53,21 +53,21 @@ public class FeedbackService : IFeedbackService
     public async Task<FeedbackResponseDto?> GetByIdAsync(Guid id)
     {
         var feedback = await _feedbackRepository.GetByIdAsync(id);
-        
+
         return feedback == null ? null : MapToResponseDto(feedback);
     }
 
     public async Task<IEnumerable<FeedbackResponseDto>> GetAllAsync()
     {
         var feedbacks = await _feedbackRepository.GetAllAsync();
-        
+
         return feedbacks.Select(MapToResponseDto);
     }
 
     public async Task<FeedbackResponseDto?> UpdateFeedbackAsync(Guid id, UpdateFeedbackDto dto, int currentUserId)
     {
         var existingFeedback = await _feedbackRepository.GetByIdAsync(id);
-        
+
         if (existingFeedback == null)
             return null;
 
@@ -78,19 +78,19 @@ public class FeedbackService : IFeedbackService
         // Updates the fields that were sent if they are not null
         if (dto.Review != null)
             existingFeedback.Review = dto.Review;
-        
+
         if (dto.Rating.HasValue)
             existingFeedback.Rating = dto.Rating.Value;
 
         var updatedFeedback = await _feedbackRepository.UpdateAsync(existingFeedback);
-        
+
         return MapToResponseDto(updatedFeedback);
     }
 
     public async Task<bool> DeleteFeedbackAsync(Guid id, int currentUserId)
     {
         var existingFeedback = await _feedbackRepository.GetByIdAsync(id);
-        
+
         if (existingFeedback == null)
             return false;
 

@@ -20,29 +20,29 @@ public class FeedbackRepository : IFeedbackRepository
 
         await _context.Feedbacks.AddAsync(feedback);
         await SaveChangesAsync();
-        
+
         return feedback;
     }
 
     public async Task<bool> DeleteAsync(Guid id)
     {
-       var feedback = await _context.Feedbacks.FindAsync(id);
-        
+        var feedback = await _context.Feedbacks.FindAsync(id);
+
         if (feedback == null)
             return false;
 
         _context.Feedbacks.Remove(feedback);
         await SaveChangesAsync();
-        
+
         return true;
     }
 
     public async Task<IEnumerable<Feedback>> GetAllAsync()
     {
-         return await _context.Feedbacks
-            .Include(f => f.Patient)
-            .Include(f => f.Caregiver)
-            .ToListAsync();
+        return await _context.Feedbacks
+           .Include(f => f.Patient)
+           .Include(f => f.Caregiver)
+           .ToListAsync();
     }
 
     public async Task<IEnumerable<Feedback>> GetByCaregiverIdAsync(int caregiverId)
@@ -55,10 +55,10 @@ public class FeedbackRepository : IFeedbackRepository
 
     public async Task<Feedback?> GetByIdAsync(Guid id)
     {
-         return await _context.Feedbacks
-            .Include(f => f.Patient)
-            .Include(f => f.Caregiver)
-            .FirstOrDefaultAsync(f => f.Id == id);
+        return await _context.Feedbacks
+           .Include(f => f.Patient)
+           .Include(f => f.Caregiver)
+           .FirstOrDefaultAsync(f => f.Id == id);
     }
 
     public async Task<Feedback?> GetByMeetingIdAsync(Guid meetingId)
@@ -83,7 +83,7 @@ public class FeedbackRepository : IFeedbackRepository
             throw new ArgumentNullException(nameof(feedback));
 
         var existingFeedback = await _context.Feedbacks.FindAsync(feedback.Id);
-        
+
         if (existingFeedback == null)
             throw new KeyNotFoundException($"Feedback with ID {feedback.Id} not found");
 
@@ -93,7 +93,7 @@ public class FeedbackRepository : IFeedbackRepository
 
         _context.Feedbacks.Update(existingFeedback);
         await SaveChangesAsync();
-        
+
         return existingFeedback;
 
     }
