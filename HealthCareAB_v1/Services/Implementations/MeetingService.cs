@@ -190,6 +190,6 @@ public class MeetingService : IMeetingService
         await _meetingRepository.CreateAsync(newMeeting);
         await _meetingRepository.SaveChangesAsync();
 
-        return MeetingResponseDto.FromEntity(meeting);
+        return MeetingResponseDto.FromEntity(newMeeting);
     }
 }
