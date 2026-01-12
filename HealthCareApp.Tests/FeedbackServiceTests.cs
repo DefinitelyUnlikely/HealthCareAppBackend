@@ -105,7 +105,7 @@ public class FeedbackServiceTests
         var user = new User
         {
             Id = userId,
-            Roles = new List<string> { "Admin" } 
+            Roles = new List<string> { "Admin" }
         };
 
         var mockUserService = new Mock<IUserService>();
@@ -239,8 +239,8 @@ public class FeedbackServiceTests
             Rating = 5,
             Review = "Excellent!",
             MeetingId = Guid.NewGuid(),
-            PatientId = 1,  
-            CaregiverId = 2,  
+            PatientId = 1,
+            CaregiverId = 2,
             Patient = new Patient { FirstName = "John", LastName = "Doe" },
             Caregiver = new Caregiver { FirstName = "Dr. Jane", LastName = "Smith" }
         };
@@ -307,8 +307,8 @@ public class FeedbackServiceTests
                 Rating = 5,
                 Review = "Great!",
                 MeetingId = Guid.NewGuid(),
-                PatientId = 1,  
-                CaregiverId = 2,  
+                PatientId = 1,
+                CaregiverId = 2,
                 Patient = new Patient { FirstName = "John", LastName = "Doe" },
                 Caregiver = new Caregiver { FirstName = "Dr. Jane", LastName = "Smith" }
             },
@@ -318,8 +318,8 @@ public class FeedbackServiceTests
                 Rating = 4,
                 Review = "Good!",
                 MeetingId = Guid.NewGuid(),
-                PatientId = 3,  
-                CaregiverId = 4,  
+                PatientId = 3,
+                CaregiverId = 4,
                 Patient = new Patient { FirstName = "Alice", LastName = "Johnson" },
                 Caregiver = new Caregiver { FirstName = "Dr. Bob", LastName = "Brown" }
             }
@@ -368,7 +368,7 @@ public class FeedbackServiceTests
             Review = "Original review",
             MeetingId = Guid.NewGuid(),
             PatientId = patientId,
-            CaregiverId = 2,  
+            CaregiverId = 2,
             Patient = new Patient { Id = patientId, FirstName = "John", LastName = "Doe" },
             Caregiver = new Caregiver { FirstName = "Dr. Jane", LastName = "Smith" }
         };
@@ -452,7 +452,7 @@ public class FeedbackServiceTests
             Review = "Original review",
             MeetingId = Guid.NewGuid(),
             PatientId = patientId,
-            CaregiverId = 3,  
+            CaregiverId = 3,
             Patient = new Patient { FirstName = "John", LastName = "Doe" },
             Caregiver = new Caregiver { FirstName = "Dr. Jane", LastName = "Smith" }
         };
@@ -479,47 +479,47 @@ public class FeedbackServiceTests
     }
 
 
-[Fact]
-public async Task DeleteFeedbackAsync_ValidDelete_ReturnsTrue()
-{
-    // Arrange
-    var feedbackId = Guid.NewGuid();
-    var patientId = 1;
-
-    var existingFeedback = new Feedback
+    [Fact]
+    public async Task DeleteFeedbackAsync_ValidDelete_ReturnsTrue()
     {
-        Id = feedbackId,
-        Rating = 5,  
-        MeetingId = Guid.NewGuid(),
-        PatientId = patientId,
-        CaregiverId = 2,
-        Patient = new Patient { Id = patientId, Roles = new List<string> { "Patient" } },
-        Caregiver = new Caregiver { FirstName = "Dr. Jane", LastName = "Smith" }
-    };
+        // Arrange
+        var feedbackId = Guid.NewGuid();
+        var patientId = 1;
 
-    var mockFeedbackRepository = new Mock<IFeedbackRepository>();
-    mockFeedbackRepository.Setup(r => r.GetByIdAsync(feedbackId)).ReturnsAsync(existingFeedback);
-    mockFeedbackRepository.Setup(r => r.DeleteAsync(feedbackId)).ReturnsAsync(true);
+        var existingFeedback = new Feedback
+        {
+            Id = feedbackId,
+            Rating = 5,
+            MeetingId = Guid.NewGuid(),
+            PatientId = patientId,
+            CaregiverId = 2,
+            Patient = new Patient { Id = patientId, Roles = new List<string> { "Patient" } },
+            Caregiver = new Caregiver { FirstName = "Dr. Jane", LastName = "Smith" }
+        };
 
-    var mockUserService = new Mock<IUserService>();
-    mockUserService.Setup(s => s.GetUserByIdAsync(patientId)).ReturnsAsync(existingFeedback.Patient);
+        var mockFeedbackRepository = new Mock<IFeedbackRepository>();
+        mockFeedbackRepository.Setup(r => r.GetByIdAsync(feedbackId)).ReturnsAsync(existingFeedback);
+        mockFeedbackRepository.Setup(r => r.DeleteAsync(feedbackId)).ReturnsAsync(true);
 
-    var mockMeetingRepository = new Mock<IMeetingRepository>();
+        var mockUserService = new Mock<IUserService>();
+        mockUserService.Setup(s => s.GetUserByIdAsync(patientId)).ReturnsAsync(existingFeedback.Patient);
 
-    var feedbackService = new FeedbackService(
-        mockFeedbackRepository.Object,
-        mockUserService.Object,
-        mockMeetingRepository.Object
-    );
+        var mockMeetingRepository = new Mock<IMeetingRepository>();
 
-    // Act
-    var result = await feedbackService.DeleteFeedbackAsync(feedbackId, patientId);
+        var feedbackService = new FeedbackService(
+            mockFeedbackRepository.Object,
+            mockUserService.Object,
+            mockMeetingRepository.Object
+        );
 
-    // Assert
-    Assert.True(result);
-    mockFeedbackRepository.Verify(r => r.GetByIdAsync(feedbackId), Times.Once);
-    mockFeedbackRepository.Verify(r => r.DeleteAsync(feedbackId), Times.Once);
-}
+        // Act
+        var result = await feedbackService.DeleteFeedbackAsync(feedbackId, patientId);
+
+        // Assert
+        Assert.True(result);
+        mockFeedbackRepository.Verify(r => r.GetByIdAsync(feedbackId), Times.Once);
+        mockFeedbackRepository.Verify(r => r.DeleteAsync(feedbackId), Times.Once);
+    }
 
     [Fact]
     public async Task DeleteFeedbackAsync_FeedbackNotFound_ReturnsFalse()
@@ -549,52 +549,52 @@ public async Task DeleteFeedbackAsync_ValidDelete_ReturnsTrue()
         mockFeedbackRepository.Verify(r => r.DeleteAsync(It.IsAny<Guid>()), Times.Never);
     }
 
-[Fact]
-public async Task DeleteFeedbackAsync_UserNotOwner_ThrowsUnauthorizedAccessException()
-{
-    // Arrange
-    var feedbackId = Guid.NewGuid();
-    var patientId = 1;
-    var wrongUserId = 2;
-
-    var existingFeedback = new Feedback
+    [Fact]
+    public async Task DeleteFeedbackAsync_UserNotOwner_ThrowsUnauthorizedAccessException()
     {
-        Id = feedbackId,
-        Rating = 5,  
-        MeetingId = Guid.NewGuid(),
-        PatientId = patientId,
-        CaregiverId = 3,
-        Patient = new Patient { FirstName = "John", LastName = "Doe" },
-        Caregiver = new Caregiver { FirstName = "Dr. Jane", LastName = "Smith" }
-    };
+        // Arrange
+        var feedbackId = Guid.NewGuid();
+        var patientId = 1;
+        var wrongUserId = 2;
 
-    var wrongUser = new User
-    {
-        Id = wrongUserId,
-        Roles = new List<string> { "Patient" }
-    };
+        var existingFeedback = new Feedback
+        {
+            Id = feedbackId,
+            Rating = 5,
+            MeetingId = Guid.NewGuid(),
+            PatientId = patientId,
+            CaregiverId = 3,
+            Patient = new Patient { FirstName = "John", LastName = "Doe" },
+            Caregiver = new Caregiver { FirstName = "Dr. Jane", LastName = "Smith" }
+        };
 
-    var mockFeedbackRepository = new Mock<IFeedbackRepository>();
-    mockFeedbackRepository.Setup(r => r.GetByIdAsync(feedbackId)).ReturnsAsync(existingFeedback);
+        var wrongUser = new User
+        {
+            Id = wrongUserId,
+            Roles = new List<string> { "Patient" }
+        };
 
-    var mockUserService = new Mock<IUserService>();
-    mockUserService.Setup(s => s.GetUserByIdAsync(wrongUserId)).ReturnsAsync(wrongUser);
+        var mockFeedbackRepository = new Mock<IFeedbackRepository>();
+        mockFeedbackRepository.Setup(r => r.GetByIdAsync(feedbackId)).ReturnsAsync(existingFeedback);
 
-    var mockMeetingRepository = new Mock<IMeetingRepository>();
+        var mockUserService = new Mock<IUserService>();
+        mockUserService.Setup(s => s.GetUserByIdAsync(wrongUserId)).ReturnsAsync(wrongUser);
 
-    var feedbackService = new FeedbackService(
-        mockFeedbackRepository.Object,
-        mockUserService.Object,
-        mockMeetingRepository.Object
-    );
+        var mockMeetingRepository = new Mock<IMeetingRepository>();
 
-    // Act & Assert
-    await Assert.ThrowsAsync<UnauthorizedAccessException>(
-        async () => await feedbackService.DeleteFeedbackAsync(feedbackId, wrongUserId)
-    );
+        var feedbackService = new FeedbackService(
+            mockFeedbackRepository.Object,
+            mockUserService.Object,
+            mockMeetingRepository.Object
+        );
 
-    mockFeedbackRepository.Verify(r => r.GetByIdAsync(feedbackId), Times.Once);
-    mockFeedbackRepository.Verify(r => r.DeleteAsync(It.IsAny<Guid>()), Times.Never);
-}
+        // Act & Assert
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(
+            async () => await feedbackService.DeleteFeedbackAsync(feedbackId, wrongUserId)
+        );
+
+        mockFeedbackRepository.Verify(r => r.GetByIdAsync(feedbackId), Times.Once);
+        mockFeedbackRepository.Verify(r => r.DeleteAsync(It.IsAny<Guid>()), Times.Never);
+    }
 
 }
