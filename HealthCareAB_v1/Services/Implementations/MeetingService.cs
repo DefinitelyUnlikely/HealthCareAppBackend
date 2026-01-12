@@ -103,4 +103,34 @@ public class MeetingService : IMeetingService
 
         return MeetingResponseDto.FromEntity(meeting);
     }
+
+    public async Task<MeetingResponseDto> CancelAsync(CancelMeetingDto request, int userId)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var meeting = await _meetingRepository.GetAsync(request.MeetingId);
+        if (meeting is null)
+        {
+            return new MeetingResponseDto { Success = false, Message = "Meeting not found" };
+        }
+        var patientCancel = meeting.PatientId == userId;
+        var caregiverCancel = meeting.CaregiverId == userId;
+        if (!patientCancel && !caregiverCancel)
+        {
+            return new MeetingResponseDto { Success = false, Message = "Invalid user" };
+        }
+        if (meeting.Status != MeetingStatus.Confirmed)
+        {
+            return new MeetingResponseDto { Success = false, Message = "Can only cancel confirmed meetings" };
+        }
+        if (meeting.StartTime < DateTime.Now.AddHours(23) && patientCancel) // Extra lenience because of DST.
+        {
+            return new MeetingResponseDto { Success = false, Message = "Can only cancel meetings at least 24 hours ahead" };
+        }
+
+        meeting.Canceled = true;
+        meeting.Notes = request.Notes;
+        await _meetingRepository.SaveChangesAsync();
+
+        return MeetingResponseDto.FromEntity(meeting);
+    }
 }
