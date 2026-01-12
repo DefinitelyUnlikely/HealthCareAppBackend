@@ -2,13 +2,13 @@ namespace HealthCareAB_v1.Models.Notification;
 
 public class EmailNotification : Notification
 {
-    public virtual required string Subject { get; set; }
+    public virtual string Subject { get; set; } = string.Empty;
     public virtual string Html { get; set; } = string.Empty;
 }
 
 public class MeetingConfirmedEmailNotification : EmailNotification
 {
-    public override required string Subject { get; set; } = "Möte bokat";
+    public override string Subject { get; set; } = "Möte bokat";
     public required Meeting Meeting { get; set; }
 
     public string AddressMessage => Meeting.Caregiver != null ? " på " + Meeting.Caregiver.Address : string.Empty;
@@ -22,7 +22,7 @@ public class MeetingConfirmedEmailNotification : EmailNotification
 
 public class MeetingCancelledEmailNotification : EmailNotification
 {
-    public override required string Subject { get; set; } = "Möte avbokat";
+    public override string Subject { get; set; } = "Möte avbokat";
     public required Meeting Meeting { get; set; }
 
     public string AddressMessage => Meeting.Caregiver != null ? " på " + Meeting.Caregiver.Address : string.Empty;
@@ -36,7 +36,7 @@ public class MeetingCancelledEmailNotification : EmailNotification
 
 public class MeetingReminderEmailNotification : EmailNotification
 {
-    public override required string Subject { get; set; } = "Mötespåminnelse";
+    public override string Subject { get; set; } = "Mötespåminnelse";
     public required Meeting Meeting { get; set; }
 
     public string AddressMessage => Meeting.Caregiver != null ? " på " + Meeting.Caregiver.Address : string.Empty;
@@ -50,7 +50,7 @@ public class MeetingReminderEmailNotification : EmailNotification
 
 public class MeetingUpdatedEmailNotification : EmailNotification
 {
-    public override required string Subject { get; set; } = "Möte uppdaterat";
+    public override string Subject { get; set; } = "Möte uppdaterat";
     public required Meeting OldMeeting { get; set; }
     public required Meeting NewMeeting { get; set; }
 

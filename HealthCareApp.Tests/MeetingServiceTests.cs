@@ -4,6 +4,7 @@ using HealthCareAB_v1.Repositories.Interfaces;
 using HealthCareAB_v1.DTOs;
 using System.Text.Json;
 using HealthCareAB_v1.Models;
+using HealthCareAB_v1.Services.Interfaces.Notifications;
 
 namespace HealthCareApp.Tests;
 
@@ -22,10 +23,11 @@ public class MeetingServiceTests
         var expectedEndTime = meetingDto.StartTime.AddMinutes(30);
 
         var mockMeetingRepository = new Mock<IMeetingRepository>();
+        var mockNotificationService = new Mock<INotificationService>();
         mockMeetingRepository.Setup(repo => repo.TimeUnavailableAsync(It.IsAny<Meeting>())).ReturnsAsync(false);
         mockMeetingRepository.Setup(repo => repo.CreateAsync(It.IsAny<Meeting>())).Returns(Task.CompletedTask);
 
-        var meetingService = new MeetingService(mockMeetingRepository.Object);
+        var meetingService = new MeetingService(mockMeetingRepository.Object, mockNotificationService.Object);
 
         // Act
         var result = await meetingService.CreateAsync(meetingDto);
@@ -49,9 +51,10 @@ public class MeetingServiceTests
         };
 
         var mockMeetingRepository = new Mock<IMeetingRepository>();
+        var mockNotificationService = new Mock<INotificationService>();
         mockMeetingRepository.Setup(repo => repo.TimeUnavailableAsync(It.IsAny<Meeting>())).ReturnsAsync(true);
 
-        var meetingService = new MeetingService(mockMeetingRepository.Object);
+        var meetingService = new MeetingService(mockMeetingRepository.Object, mockNotificationService.Object);
 
         // Act
         var result = await meetingService.CreateAsync(meetingDto);
@@ -77,10 +80,11 @@ public class MeetingServiceTests
         var expectedEndTime = meetingDto.StartTime.AddMinutes(30 * meetingDto.Slots);
 
         var mockMeetingRepository = new Mock<IMeetingRepository>();
+        var mockNotificationService = new Mock<INotificationService>();
         mockMeetingRepository.Setup(repo => repo.TimeUnavailableAsync(It.IsAny<Meeting>())).ReturnsAsync(false);
         mockMeetingRepository.Setup(repo => repo.CreateAsync(It.IsAny<Meeting>())).Returns(Task.CompletedTask);
 
-        var meetingService = new MeetingService(mockMeetingRepository.Object);
+        var meetingService = new MeetingService(mockMeetingRepository.Object, mockNotificationService.Object);
 
         // Act
         var result = await meetingService.CreateAsync(meetingDto);
@@ -94,9 +98,10 @@ public class MeetingServiceTests
     {
         // Arrange
         var mockMeetingRepository = new Mock<IMeetingRepository>();
+        var mockNotificationService = new Mock<INotificationService>();
         mockMeetingRepository.Setup(repo => repo.GetAsync(It.IsAny<Guid>())).ReturnsAsync((Meeting?)null);
 
-        var meetingService = new MeetingService(mockMeetingRepository.Object);
+        var meetingService = new MeetingService(mockMeetingRepository.Object, mockNotificationService.Object);
 
         // Act
         var result = await meetingService.GetMeetingAsync(Guid.NewGuid(), 1, false);
@@ -123,9 +128,10 @@ public class MeetingServiceTests
         };
 
         var mockMeetingRepository = new Mock<IMeetingRepository>();
+        var mockNotificationService = new Mock<INotificationService>();
         mockMeetingRepository.Setup(repo => repo.GetAsync(meetingId)).ReturnsAsync(meeting);
 
-        var meetingService = new MeetingService(mockMeetingRepository.Object);
+        var meetingService = new MeetingService(mockMeetingRepository.Object, mockNotificationService.Object);
 
         // Act
         var result = await meetingService.GetMeetingAsync(meetingId, nonParticipantUserId, false);
@@ -152,9 +158,10 @@ public class MeetingServiceTests
         var expected = MeetingResponseDto.FromEntity(meeting);
 
         var mockMeetingRepository = new Mock<IMeetingRepository>();
+        var mockNotificationService = new Mock<INotificationService>();
         mockMeetingRepository.Setup(repo => repo.GetAsync(meetingId)).ReturnsAsync(meeting);
 
-        var meetingService = new MeetingService(mockMeetingRepository.Object);
+        var meetingService = new MeetingService(mockMeetingRepository.Object, mockNotificationService.Object);
 
         // Act
         var result = await meetingService.GetMeetingAsync(meetingId, patientId, false);
@@ -183,9 +190,10 @@ public class MeetingServiceTests
         var expected = MeetingResponseDto.FromEntity(meeting);
 
         var mockMeetingRepository = new Mock<IMeetingRepository>();
+        var mockNotificationService = new Mock<INotificationService>();
         mockMeetingRepository.Setup(repo => repo.GetAsync(meetingId)).ReturnsAsync(meeting);
 
-        var meetingService = new MeetingService(mockMeetingRepository.Object);
+        var meetingService = new MeetingService(mockMeetingRepository.Object, mockNotificationService.Object);
 
         // Act
         var result = await meetingService.GetMeetingAsync(meetingId, caregiverId, false);
@@ -215,9 +223,10 @@ public class MeetingServiceTests
         var expected = MeetingResponseDto.FromEntity(meeting);
 
         var mockMeetingRepository = new Mock<IMeetingRepository>();
+        var mockNotificationService = new Mock<INotificationService>();
         mockMeetingRepository.Setup(repo => repo.GetAsync(meetingId)).ReturnsAsync(meeting);
 
-        var meetingService = new MeetingService(mockMeetingRepository.Object);
+        var meetingService = new MeetingService(mockMeetingRepository.Object, mockNotificationService.Object);
 
         // Act
         var result = await meetingService.GetMeetingAsync(meetingId, nonParticipantUserId, true);
@@ -237,7 +246,8 @@ public class MeetingServiceTests
     {
         // Arrange
         var mockMeetingRepository = new Mock<IMeetingRepository>();
-        var meetingService = new MeetingService(mockMeetingRepository.Object);
+        var mockNotificationService = new Mock<INotificationService>();
+        var meetingService = new MeetingService(mockMeetingRepository.Object, mockNotificationService.Object);
 
         // Act and Assert
         await Assert.ThrowsAsync<ArgumentNullException>(async () => await meetingService.ConfirmAsync(null!, 1));
@@ -251,9 +261,10 @@ public class MeetingServiceTests
     {
         // Arrange
         var mockMeetingRepository = new Mock<IMeetingRepository>();
+        var mockNotificationService = new Mock<INotificationService>();
         mockMeetingRepository.Setup(repo => repo.GetAsync(It.IsAny<Guid>())).ReturnsAsync((Meeting?)null);
 
-        var meetingService = new MeetingService(mockMeetingRepository.Object);
+        var meetingService = new MeetingService(mockMeetingRepository.Object, mockNotificationService.Object);
         var meetingId = Guid.NewGuid();
         var request = new ConfirmMeetingDto { MeetingId = meetingId, PatientId = 1, Notes = "Some notes" };
 
@@ -280,9 +291,10 @@ public class MeetingServiceTests
         };
 
         var mockMeetingRepository = new Mock<IMeetingRepository>();
+        var mockNotificationService = new Mock<INotificationService>();
         mockMeetingRepository.Setup(repo => repo.GetAsync(meetingId)).ReturnsAsync(meeting);
 
-        var meetingService = new MeetingService(mockMeetingRepository.Object);
+        var meetingService = new MeetingService(mockMeetingRepository.Object, mockNotificationService.Object);
         var request = new ConfirmMeetingDto { MeetingId = meetingId, PatientId = 2, Notes = "Some notes" }; // Mismatched PatientId
 
         // Act
@@ -308,9 +320,10 @@ public class MeetingServiceTests
         };
 
         var mockMeetingRepository = new Mock<IMeetingRepository>();
+        var mockNotificationService = new Mock<INotificationService>();
         mockMeetingRepository.Setup(repo => repo.GetAsync(meetingId)).ReturnsAsync(meeting);
 
-        var meetingService = new MeetingService(mockMeetingRepository.Object);
+        var meetingService = new MeetingService(mockMeetingRepository.Object, mockNotificationService.Object);
         var request = new ConfirmMeetingDto { MeetingId = meetingId, PatientId = 1, Notes = "Some notes" }; // Already confirmed
 
         // Act
@@ -337,9 +350,10 @@ public class MeetingServiceTests
         };
 
         var mockMeetingRepository = new Mock<IMeetingRepository>();
+        var mockNotificationService = new Mock<INotificationService>();
         mockMeetingRepository.Setup(repo => repo.GetAsync(meetingId)).ReturnsAsync(meeting);
 
-        var meetingService = new MeetingService(mockMeetingRepository.Object);
+        var meetingService = new MeetingService(mockMeetingRepository.Object, mockNotificationService.Object);
         var request = new ConfirmMeetingDto { MeetingId = meetingId, PatientId = 1, Notes = "Some notes" }; // Already confirmed
 
         // Act
@@ -352,5 +366,151 @@ public class MeetingServiceTests
         Assert.Null(meeting.ExpiresAt);
         mockMeetingRepository.Verify(r => r.GetAsync(meetingId), Times.Once());
         mockMeetingRepository.Verify(r => r.SaveChangesAsync(), Times.Once());
+    }
+
+    [Fact]
+    public async Task CancelAsync_NullRequest_ThrowsArgumentNullException()
+    {
+        // Arrange
+        var mockRepo = new Mock<IMeetingRepository>();
+        var mockNotificationService = new Mock<INotificationService>();
+        var service = new MeetingService(mockRepo.Object, mockNotificationService.Object);
+
+        // Act and Assert
+        await Assert.ThrowsAsync<ArgumentNullException>(() => service.CancelAsync(null!, 1));
+    }
+
+    [Fact]
+    public async Task CancelAsync_MeetingNotFound_ReturnsError()
+    {
+        // Arrange
+        var mockRepo = new Mock<IMeetingRepository>();
+        var mockNotificationService = new Mock<INotificationService>();
+        mockRepo.Setup(r => r.GetAsync(It.IsAny<Guid>())).ReturnsAsync((Meeting?)null);
+        var service = new MeetingService(mockRepo.Object, mockNotificationService.Object);
+
+        // Act
+        var result = await service.CancelAsync(new CancelMeetingDto { MeetingId = Guid.NewGuid() }, 1);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal("Meeting not found", result.Message);
+    }
+
+    [Fact]
+    public async Task CancelAsync_UserNotPatient_ReturnsError()
+    {
+        // Arrange
+        var meeting = new Meeting { PatientId = 1 };
+        var mockRepo = new Mock<IMeetingRepository>();
+        var mockNotificationService = new Mock<INotificationService>();
+        mockRepo.Setup(r => r.GetAsync(It.IsAny<Guid>())).ReturnsAsync(meeting);
+        var service = new MeetingService(mockRepo.Object, mockNotificationService.Object);
+
+        // Act
+        var result = await service.CancelAsync(new CancelMeetingDto { MeetingId = Guid.NewGuid() }, 2);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal("Invalid user", result.Message);
+    }
+
+    [Fact]
+    public async Task CancelAsync_MeetingNotConfirmed_ReturnsError()
+    {
+        // Arrange
+        var meeting = new Meeting { PatientId = 1, Status = MeetingStatus.Pending };
+        var mockRepo = new Mock<IMeetingRepository>();
+        var mockNotificationService = new Mock<INotificationService>();
+        mockRepo.Setup(r => r.GetAsync(It.IsAny<Guid>())).ReturnsAsync(meeting);
+        var service = new MeetingService(mockRepo.Object, mockNotificationService.Object);
+
+        // Act
+        var result = await service.CancelAsync(new CancelMeetingDto { MeetingId = Guid.NewGuid() }, 1);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal("Can only cancel confirmed meetings", result.Message);
+    }
+
+    [Fact]
+    public async Task CancelAsync_Patient_MeetingLessThan24HoursAway_ReturnsError()
+    {
+        // Arrange
+        int userId = 1;
+        var meeting = new Meeting
+        {
+            PatientId = userId,
+            Status = MeetingStatus.Confirmed,
+            StartTime = DateTime.Now.AddHours(10)
+        };
+        var mockRepo = new Mock<IMeetingRepository>();
+        var mockNotificationService = new Mock<INotificationService>();
+        mockRepo.Setup(r => r.GetAsync(It.IsAny<Guid>())).ReturnsAsync(meeting);
+        var service = new MeetingService(mockRepo.Object, mockNotificationService.Object);
+
+        // Act
+        var result = await service.CancelAsync(new CancelMeetingDto { MeetingId = Guid.NewGuid() }, userId);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal("Can only cancel meetings at least 24 hours ahead", result.Message);
+    }
+
+    [Fact]
+    public async Task CancelAsync_Caregiver_MeetingLessThan24HoursAway_ReturnsSuccess()
+    {
+        // Arrange
+        var meetingId = Guid.NewGuid();
+        int userId = 1;
+        var meeting = new Meeting
+        {
+            Id = meetingId,
+            CaregiverId = userId,
+            Status = MeetingStatus.Confirmed,
+            StartTime = DateTime.Now.AddHours(10),
+            Canceled = false,
+        };
+        var mockRepo = new Mock<IMeetingRepository>();
+        var mockNotificationService = new Mock<INotificationService>();
+        mockRepo.Setup(r => r.GetAsync(meetingId)).ReturnsAsync(meeting);
+        var service = new MeetingService(mockRepo.Object, mockNotificationService.Object);
+
+        // Act
+        var result = await service.CancelAsync(new CancelMeetingDto { MeetingId = meetingId }, userId);
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.True(meeting.Canceled);
+    }
+
+    [Fact]
+    public async Task CancelAsync_ValidRequest_CancelsMeeting()
+    {
+        // Arrange
+        var meetingId = Guid.NewGuid();
+        int userId = 1;
+        var meeting = new Meeting
+        {
+            Id = meetingId,
+            PatientId = userId,
+            Status = MeetingStatus.Confirmed,
+            StartTime = DateTime.Now.AddHours(24).AddSeconds(1),
+            Canceled = false
+        };
+        var mockRepo = new Mock<IMeetingRepository>();
+        var mockNotificationService = new Mock<INotificationService>();
+        mockRepo.Setup(r => r.GetAsync(meetingId)).ReturnsAsync(meeting);
+        var service = new MeetingService(mockRepo.Object, mockNotificationService.Object);
+
+        // Act
+        var request = new CancelMeetingDto { MeetingId = meetingId, Notes = "Sorry" };
+        var result = await service.CancelAsync(request, userId);
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.True(meeting.Canceled);
+        Assert.Equal("Sorry", meeting.Notes);
+        mockRepo.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
 }
