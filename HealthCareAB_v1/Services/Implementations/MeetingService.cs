@@ -87,7 +87,9 @@ public class MeetingService : IMeetingService
         {
             return new MeetingResponseDto { Success = false, Message = "Meeting not found" };
         }
-        if (meeting.PatientId != userId)
+        var patientCancel = meeting.PatientId == userId;
+        var caregiverCancel = meeting.CaregiverId == userId;
+        if (!patientCancel && !caregiverCancel)
         {
             return new MeetingResponseDto { Success = false, Message = "Invalid user" };
         }
@@ -95,7 +97,7 @@ public class MeetingService : IMeetingService
         {
             return new MeetingResponseDto { Success = false, Message = "Can only cancel confirmed meetings" };
         }
-        if (meeting.StartTime < DateTime.Now.AddHours(25)) // Extra lenience because of DST.
+        if (meeting.StartTime < DateTime.Now.AddHours(23) && patientCancel) // Extra lenience because of DST.
         {
             return new MeetingResponseDto { Success = false, Message = "Can only cancel meetings at least 24 hours ahead" };
         }
