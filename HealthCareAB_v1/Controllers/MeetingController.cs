@@ -130,4 +130,42 @@ public class MeetingController : ControllerBase
         }
         return NoContent();
     }
+
+
+
+    /// <summary>
+    /// Updates a specific meeting with new notes/time.
+    /// </summary>
+    [Authorize]
+    [HttpPost("{id}")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> UpdateMeeting([FromBody] UpdateMeetingDto request, Guid id)
+    {
+        if (String.IsNullOrEmpty(request.Notes) && request.StartTime is null)
+        {
+            return BadRequest(new { message = "Must provide reason or new time" });
+        }
+        if (request.MeetingId != id)
+        {
+            return BadRequest(new { message = "Meeting Id does not match" });
+        }
+        if (!int.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out int userId))
+        {
+            return Unauthorized(new { message = "Not authenticated" });
+        }
+
+        var result = await _meetingService.UpdateAsync(request, userId);
+        if (!result.Success)
+        {
+            return BadRequest(new { message = result.Message });
+        }
+
+        if (!result.Success || result.Meeting is null)
+        {
+            return Conflict(new { message = result.Message });
+        }
+        return CreatedAtAction(nameof(GetMeeting), new { id = result.Meeting.Id }, result);
+    }
 }
