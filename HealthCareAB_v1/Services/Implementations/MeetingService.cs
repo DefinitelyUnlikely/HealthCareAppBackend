@@ -87,7 +87,7 @@ public class MeetingService : IMeetingService
         meeting.ExpiresAt = null;
         await _meetingRepository.SaveChangesAsync();
 
-        if (meeting.Patient is null)
+        if (meeting.Patient?.Email is null)
         {
             // This should not be null, but if it is, just return the meeting.
             // Won't be any patient to notify anyway then.
@@ -135,7 +135,7 @@ public class MeetingService : IMeetingService
         meeting.Notes = request.Notes;
         await _meetingRepository.SaveChangesAsync();
 
-        if (meeting.Patient is null)
+        if (meeting.Patient?.Email is null)
         {
             return MeetingResponseDto.FromEntity(meeting);
         }
@@ -207,6 +207,18 @@ public class MeetingService : IMeetingService
         meeting.Notes = request.Notes;
         await _meetingRepository.CreateAsync(newMeeting);
         await _meetingRepository.SaveChangesAsync();
+
+        if (meeting.Patient?.Email is null)
+        {
+            return MeetingResponseDto.FromEntity(meeting);
+        }
+
+        await _notificationService.SendNotificationAsync(new MeetingUpdatedEmailNotification()
+        {
+            RecipientUser = meeting.Patient,
+            NewMeeting = newMeeting,
+            OldMeeting = meeting,
+        });
 
         return MeetingResponseDto.FromEntity(newMeeting);
     }
