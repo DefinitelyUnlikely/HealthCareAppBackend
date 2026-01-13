@@ -112,19 +112,23 @@ public class MeetingService : IMeetingService
         {
             return new MeetingResponseDto { Success = false, Message = "Meeting not found" };
         }
+
         var patientCancel = meeting.PatientId == userId;
         var caregiverCancel = meeting.CaregiverId == userId;
         if (!patientCancel && !caregiverCancel)
         {
             return new MeetingResponseDto { Success = false, Message = "Invalid user" };
         }
+
         if (meeting.Status != MeetingStatus.Confirmed)
         {
             return new MeetingResponseDto { Success = false, Message = "Can only cancel confirmed meetings" };
         }
+
         if (meeting.StartTime < DateTime.Now.AddHours(23) && patientCancel) // Extra lenience because of DST.
         {
-            return new MeetingResponseDto { Success = false, Message = "Can only cancel meetings at least 24 hours ahead" };
+            return new MeetingResponseDto
+                { Success = false, Message = "Can only cancel meetings at least 24 hours ahead" };
         }
 
         meeting.Canceled = true;
@@ -149,6 +153,7 @@ public class MeetingService : IMeetingService
         {
             return new MeetingResponseDto { Success = false, Message = "Meeting not found" };
         }
+
         var patientUpdate = meeting.PatientId == userId;
         var caregiverUpdate = meeting.CaregiverId == userId;
         if (!patientUpdate && !caregiverUpdate)
@@ -167,8 +172,10 @@ public class MeetingService : IMeetingService
         // Try to create new meeting and cancel old meeting
         if (meeting.StartTime < DateTime.Now.AddHours(23) && patientUpdate) // Extra lenience because of DST.
         {
-            return new MeetingResponseDto { Success = false, Message = "Can only reschedule meetings at least 24 hours ahead" };
+            return new MeetingResponseDto
+                { Success = false, Message = "Can only reschedule meetings at least 24 hours ahead" };
         }
+
         var newMeeting = new Meeting
         {
             StartTime = request.StartTime.Value,
@@ -189,6 +196,18 @@ public class MeetingService : IMeetingService
         meeting.Notes = request.Notes;
         await _meetingRepository.CreateAsync(newMeeting);
         await _meetingRepository.SaveChangesAsync();
+
+        if (meeting.Patient is null)
+        {
+            return MeetingResponseDto.FromEntity(meeting);
+        }
+
+        await _notificationService.SendNotificationAsync(new MeetingUpdatedEmailNotification()
+        {
+            RecipientUser = meeting.Patient,
+            NewMeeting = newMeeting,
+            OldMeeting = meeting,
+        });
 
         return MeetingResponseDto.FromEntity(newMeeting);
     }
