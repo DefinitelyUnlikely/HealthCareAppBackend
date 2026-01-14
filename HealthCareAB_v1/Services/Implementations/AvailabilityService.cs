@@ -39,15 +39,27 @@ public class AvailabilityService(IAvailabilityRepository availabilityRepository,
         await availabilityRepository.SaveUnavailabilityAsync(new Unavailability
         {
             CaregiverId = userId,
-            StartDate = from ?? DateTime.Now,
-            EndDate = to ?? DateTime.Now.AddMonths(3)
+            StartTime = from ?? DateTime.Now,
+            EndTime = to ?? DateTime.Now.AddMonths(3)
         });
     }
 
     public async Task<List<Unavailability>> GetUnavailabilityAsync(int userId, DateTime? from = null,
         DateTime? to = null, bool includeMeetings = false)
     {
-        return await availabilityRepository.GetUnavailabilityAsync(userId, from ?? DateTime.Now,
+        var unavailabilities = await availabilityRepository.GetUnavailabilityAsync(userId, from ?? DateTime.Now,
             to ?? DateTime.Now.AddMonths(3));
+
+        if (!includeMeetings) return unavailabilities;
+
+        var meetings = await meetingService.GetMeetingsAsync(userId, false);
+        unavailabilities.AddRange(meetings.Select(m => new Unavailability
+        {
+            CaregiverId = userId,
+            StartTime = m.StartTime,
+            EndTime = m.EndTime
+        }));
+
+        return unavailabilities;
     }
 }

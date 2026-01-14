@@ -17,14 +17,14 @@ public class AvailabilityRepository(IAppDbContext context) : IAvailabilityReposi
     public async Task<List<Unavailability>> GetUnavailabilityAsync(int userId, DateTime? from, DateTime? to)
     {
         return await _context.Unavailabilities
-            .Where(a => a.CaregiverId == userId && a.StartDate <= to && a.EndDate >= from)
+            .Where(a => a.CaregiverId == userId && a.StartTime <= to && a.EndTime >= from)
             .ToListAsync();
     }
 
     public async Task DeleteUnavailabilityAsync(int userId, DateTime? from, DateTime? to)
     {
         var availability = await _context.Unavailabilities
-            .Where(a => a.CaregiverId == userId && a.StartDate <= to && a.EndDate >= from)
+            .Where(a => a.CaregiverId == userId && a.StartTime <= to && a.EndTime >= from)
             .ToListAsync();
 
         if (availability == null)
