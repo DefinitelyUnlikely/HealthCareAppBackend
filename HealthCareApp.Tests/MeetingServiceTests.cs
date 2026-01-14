@@ -730,4 +730,54 @@ public class MeetingServiceTests
         // Assert
         Assert.True(result.Success);
     }
+
+    [Fact]
+    public async Task GetMeetingsAsync_ReturnsMeetings_WhenRepositoryReturnsMeetings()
+    {
+        // Arrange
+        var userId = 1;
+        var historic = false;
+        var meetings = new List<Meeting>
+        {
+            new Meeting { Id = Guid.NewGuid(), PatientId = userId, StartTime = DateTime.Now.AddDays(1) },
+            new Meeting { Id = Guid.NewGuid(), PatientId = userId, StartTime = DateTime.Now.AddDays(2) }
+        };
+
+        var mockRepo = new Mock<IMeetingRepository>();
+        var mockNotificationService = new Mock<INotificationService>();
+        mockRepo.Setup(r => r.GetByUserIdAsync(userId, historic)).ReturnsAsync(meetings);
+
+        var service = new MeetingService(mockRepo.Object, mockNotificationService.Object);
+
+        // Act
+        var result = await service.GetMeetingsAsync(userId, historic);
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.Equal(2, result.Meetings.Count);
+        mockRepo.Verify(r => r.GetByUserIdAsync(userId, historic), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetMeetingsAsync_ReturnsEmptyList_WhenRepositoryReturnsNoMeetings()
+    {
+        // Arrange
+        var userId = 1;
+        var historic = false;
+        var meetings = new List<Meeting>();
+
+        var mockRepo = new Mock<IMeetingRepository>();
+        var mockNotificationService = new Mock<INotificationService>();
+        mockRepo.Setup(r => r.GetByUserIdAsync(userId, historic)).ReturnsAsync(meetings);
+
+        var service = new MeetingService(mockRepo.Object, mockNotificationService.Object);
+
+        // Act
+        var result = await service.GetMeetingsAsync(userId, historic);
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.Empty(result.Meetings);
+        mockRepo.Verify(r => r.GetByUserIdAsync(userId, historic), Times.Once);
+    }
 }
