@@ -23,7 +23,7 @@ public class MeetingController : ControllerBase
     /// </summary>
     [Authorize]
     [HttpPost("")]
-    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(MeetingResponseDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> CreateMeeting([FromBody] CreateMeetingDto request)
@@ -52,7 +52,8 @@ public class MeetingController : ControllerBase
     /// </summary>
     [Authorize]
     [HttpGet("{id}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(MeetingResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetMeeting(Guid id)
@@ -77,7 +78,7 @@ public class MeetingController : ControllerBase
     /// </summary>
     [Authorize]
     [HttpPut("{id}")]
-    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(MeetingResponseDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> ConfirmMeeting([FromBody] ConfirmMeetingDto request, Guid id)
@@ -138,7 +139,7 @@ public class MeetingController : ControllerBase
     /// </summary>
     [Authorize]
     [HttpPost("{id}")]
-    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(MeetingResponseDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> UpdateMeeting([FromBody] UpdateMeetingDto request, Guid id)
