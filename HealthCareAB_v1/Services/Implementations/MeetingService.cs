@@ -70,7 +70,8 @@ public class MeetingService : IMeetingService
 
     public async Task<MeetingsResponseDto> GetMeetingsAsync(int userId, bool historic)
     {
-        throw new NotImplementedException();
+        var meetings = await _meetingRepository.GetByUserIdAsync(userId, historic);
+        return MeetingsResponseDto.FromEntity(meetings);
     }
 
     public async Task<MeetingResponseDto> ConfirmAsync(ConfirmMeetingDto request, int userId)

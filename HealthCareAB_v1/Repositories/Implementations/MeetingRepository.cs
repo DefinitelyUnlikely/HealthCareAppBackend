@@ -27,6 +27,21 @@ public class MeetingRepository : IMeetingRepository
         .FirstOrDefaultAsync(m => m.Id == id);
     }
 
+    public async Task<List<Meeting>> GetByUserIdAsync(int userId, bool includeHistoric)
+    {
+        var query = _context.Meetings
+        .Include(m => m.Caregiver)
+        .Include(m => m.Patient)
+        .Where(m => m.PatientId == userId);
+
+        if (!includeHistoric)
+        {
+            query = query.Where(m => m.StartTime > DateTime.Now);
+        }
+
+        return await query.ToListAsync();
+    }
+
     public async Task<bool> TimeUnavailableAsync(Meeting meeting)
     {
         return await _context.Meetings.AnyAsync(m => m.CaregiverId == meeting.CaregiverId && m.StartTime < meeting.EndTime && m.EndTime > meeting.StartTime);
