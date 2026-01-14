@@ -32,7 +32,7 @@ public class MeetingRepository : IMeetingRepository
         var query = _context.Meetings
         .Include(m => m.Caregiver)
         .Include(m => m.Patient)
-        .Where(m => m.PatientId == userId);
+        .Where(m => m.PatientId == userId || m.CaregiverId == userId);
 
         if (!includeHistoric)
         {

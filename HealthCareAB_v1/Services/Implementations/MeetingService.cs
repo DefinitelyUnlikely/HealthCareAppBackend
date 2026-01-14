@@ -85,6 +85,8 @@ public class MeetingService : IMeetingService
                 EndTime = meeting.EndTime,
                 Status = meeting.Status,
                 Notes = meeting.Notes,
+                PatientName = $"{meeting.Patient?.FirstName} {meeting.Patient?.LastName}",
+                CaregiverName = $"{meeting.Caregiver?.FirstName} {meeting.Caregiver?.LastName}",
             });
         }
         return result;

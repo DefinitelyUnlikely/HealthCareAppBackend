@@ -78,6 +78,20 @@ public class MeetingRepositoryTests
         Assert.Equal(4, meetings.Count());
     }
 
+    [Fact]
+    public async Task GetMeetingsByUserId_UserIsCaregiver_ReturnsAllMeetingsByUserId()
+    {
+        // Arrange
+        var context = TestContext();
+        var repo = new MeetingRepository(context);
+
+        // Act
+        var meetings = await repo.GetByUserIdAsync(1, true);
+
+        // Assert
+        Assert.Equal(5, meetings.Count());
+    }
+
     private AppDbContext TestContext()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
@@ -87,6 +101,7 @@ public class MeetingRepositoryTests
         var context = new AppDbContext(options);
         var today = DateTime.Now.Date;
         context.Users.Add(new Patient { Id = 3, Username = "TestPatient" });
+        context.Users.Add(new Patient { Id = 2, Username = "TestPatient2" });
         context.Users.Add(new Caregiver { Id = 1, Username = "TestCaregiver" });
         var existingMeetings = new List<Meeting>
         {

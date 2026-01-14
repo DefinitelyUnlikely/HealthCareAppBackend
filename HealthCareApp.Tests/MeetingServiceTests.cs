@@ -732,7 +732,7 @@ public class MeetingServiceTests
     }
 
     [Fact]
-    public async Task GetMeetingsAsync_ReturnsMeetings_WhenRepositoryReturnsMeetings()
+    public async Task GetMeetingsAsync_ReturnsMeetingDtos_WhenRepositoryReturnsMeetings()
     {
         // Arrange
         var userId = 1;
@@ -754,6 +754,9 @@ public class MeetingServiceTests
 
         // Assert
         Assert.Equal(2, result.Count);
+        Assert.Equal(meetings[0].Id, result[0].Id);
+        Assert.Equal(meetings[1].Id, result[1].Id);
+
         mockRepo.Verify(r => r.GetByUserIdAsync(userId, historic), Times.Once);
     }
 
