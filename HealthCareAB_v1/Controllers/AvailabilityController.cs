@@ -1,7 +1,6 @@
 using HealthCareAB_v1.DTOs.Availability;
 using HealthCareAB_v1.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 
 namespace HealthCareAB_v1.Controllers;
