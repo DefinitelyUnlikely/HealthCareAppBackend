@@ -6,5 +6,7 @@ public interface IAvailabilityService
 {
     public Task SetAvailableAsync(int userId, DateTime? from = null, DateTime? to = null);
     public Task SetUnavailableAsync(int userId, DateTime? from = null, DateTime? to = null, bool forceCancel = false);
-    public Task<List<Unavailability>> GetUnavailabilityAsync(int userId, DateTime? from = null, DateTime? to = null);
+
+    public Task<List<Unavailability>> GetUnavailabilityAsync(int userId, DateTime? from = null, DateTime? to = null,
+        bool includeMeetings = false);
 }

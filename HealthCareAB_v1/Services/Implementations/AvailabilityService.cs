@@ -26,7 +26,7 @@ public class AvailabilityService(IAvailabilityRepository availabilityRepository,
                 await meetingService.CancelAsync(new CancelMeetingDto
                 {
                     MeetingId = meeting.Id,
-                    Notes = "Möte avbokad då vårdgivaren inte längre är tillgänglig."
+                    Notes = "Möte avbokat då vårdgivaren inte längre är tillgänglig."
                 }, userId);
             }
         }
@@ -45,7 +45,7 @@ public class AvailabilityService(IAvailabilityRepository availabilityRepository,
     }
 
     public async Task<List<Unavailability>> GetUnavailabilityAsync(int userId, DateTime? from = null,
-        DateTime? to = null)
+        DateTime? to = null, bool includeMeetings = false)
     {
         return await availabilityRepository.GetUnavailabilityAsync(userId, from ?? DateTime.Now,
             to ?? DateTime.Now.AddMonths(3));
