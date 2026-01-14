@@ -18,9 +18,9 @@ public class AvailabilityService(IAvailabilityRepository availabilityRepository,
     public async Task SetUnavailableAsync(int userId, DateTime? from = null, DateTime? to = null,
         bool forceCancel = false)
     {
-        var meetings = await meetingService.GetMeetingsAsync(userId, false);
         if (forceCancel)
         {
+            var meetings = await meetingService.GetMeetingsAsync(userId, false);
             foreach (var meeting in meetings)
             {
                 await meetingService.CancelAsync(new CancelMeetingDto
@@ -32,9 +32,9 @@ public class AvailabilityService(IAvailabilityRepository availabilityRepository,
         }
 
         // now to the tricky part...
-        // if forceCancel is false, we need to get all meetings for the caregiver between from and to
-        // just like before. (so we can put that outside the if statement). 
-        // BUT we need to now create a list of unavailabilities that fits between the meetings.
+        // if forceCancel is false, Let's use our improved GetUnavailabilityAsync method
+        // to get all the unavailabilities for the caregiver between from and to.
+        // Now we need to create a list of unavailabilities that fits between the meetings.
 
         await availabilityRepository.SaveUnavailabilityAsync(new Unavailability
         {
