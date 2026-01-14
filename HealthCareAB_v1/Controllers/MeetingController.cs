@@ -79,7 +79,7 @@ public class MeetingController : ControllerBase
     /// <returns>A list of meetings for the user.</returns>
     [Authorize]
     [HttpGet("historic")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(List<MeetingDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetMeetingsForUser(bool historic)
     {
