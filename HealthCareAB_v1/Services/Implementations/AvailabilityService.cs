@@ -32,16 +32,11 @@ public class AvailabilityService(IAvailabilityRepository availabilityRepository,
         }
 
         // now to the tricky part...
-        // if forceCancel is false, Let's use our improved GetUnavailabilityAsync method
-        // to get all the unavailabilities for the caregiver between from and to.
-        // Now we need to create a list of unavailabilities that fits between the meetings.
-
-        await availabilityRepository.SaveUnavailabilityAsync(new Unavailability
-        {
-            CaregiverId = userId,
-            StartTime = from ?? DateTime.Now,
-            EndTime = to ?? DateTime.Now.AddMonths(3)
-        });
+        // We need to get all unavailabilites, including meetings.
+        // And then we need to create a list of unavailabilities that fits between the meetings 
+        // and prior unavailabilites. And in reality, we would probably like to make sure that 
+        // we have as few unavailabilites as possible.
+        var unavailabilities = await GetUnavailabilityAsync(userId, from, to, true);
     }
 
     public async Task<List<Unavailability>> GetUnavailabilityAsync(int userId, DateTime? from = null,
