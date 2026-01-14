@@ -52,6 +52,12 @@ namespace HealthCareAB_v1.Services
             {
                 Username = registerDto.Username,
                 PasswordHash = _userService.HashPassword(registerDto.Password),
+                Email = registerDto.Email,
+                FirstName = registerDto.FirstName,
+                LastName = registerDto.LastName,
+                PhoneNumber = registerDto.PhoneNumber,
+                Address = registerDto.Address,
+                PersonalNumber = registerDto.PersonalNumber,
                 Roles = roles
             };
 
