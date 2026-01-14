@@ -611,3 +611,22 @@ public class AuthServiceTests
         userServiceMock.Verify(s => s.HashPassword("mySecurePassword123"), Times.Once());
     }
 }
+
+// SEE BELOW FOR Antigravity's Agent Prompt for login tests
+// Hey! I want to create a few tests for the login endpoint
+// and the corresponding authentication service method LoginAsync.
+// I want the controller endpoint to test
+// 1. That the authservice is called and when valid results are returned,
+// we set the cookie and return the Ok result.
+// 2. That the authservice is called and if the result is not a succes,
+// we return unauthorized
+// 3. The same as 2, but we check if we get the unauthorized response when the token is an empty string.
+
+// For the authService, I want to
+// 1. Check that the userService is called with both GetUser and VerifyPassword
+// and then that the jwttoken service is called.
+// And that we do a return with a successful result.
+// 2. Same as above,
+// but we return the result for user == null
+// 3. same as above but we pretend the password doesn't pass and we send
+// send back the result with success = false (i.e. same as #2)
