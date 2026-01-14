@@ -8,16 +8,31 @@ public class AvailabilityRepository(IAppDbContext context) : IAvailabilityReposi
 {
     private readonly IAppDbContext _context = context ?? throw new ArgumentNullException(nameof(context));
 
-    public async Task SaveAvailabilityAsync(Availability availability)
+    public async Task SaveUnavailabilityAsync(Availability availability)
     {
         await _context.Availabilities.AddAsync(availability);
         await _context.SaveChangesAsync();
     }
 
-    public async Task<List<Availability>> GetAvailabilityAsync(int userId, DateTime? from, DateTime? to)
+    public async Task<List<Availability>> GetUnavailabilityAsync(int userId, DateTime? from, DateTime? to)
     {
         return await _context.Availabilities
             .Where(a => a.CaregiverId == userId && a.StartDate <= to && a.EndDate >= from)
             .ToListAsync();
+    }
+
+    public async Task DeleteUnavailabilityAsync(int userId, DateTime? from, DateTime? to)
+    {
+        var availability = await _context.Availabilities
+            .Where(a => a.CaregiverId == userId && a.StartDate <= to && a.EndDate >= from)
+            .ToListAsync();
+
+        if (availability == null)
+        {
+            throw new ArgumentException("Availability not found");
+        }
+
+        _context.Availabilities.RemoveRange(availability);
+        await _context.SaveChangesAsync();
     }
 }
