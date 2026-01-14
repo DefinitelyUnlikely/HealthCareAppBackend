@@ -495,7 +495,7 @@ public class MeetingNotificationTests
         meetingRepoMock.Setup(r => r.GetAsync(meeting.Id)).ReturnsAsync(meeting);
 
         var service = new MeetingService(meetingRepoMock.Object, notificationServiceMock.Object);
-        meeting.Patient.Email = null;
+        meeting.Patient.Email = null!;
 
         var request = new ConfirmMeetingDto { MeetingId = meeting.Id, Notes = "Confirmed" };
 
@@ -569,7 +569,7 @@ public class MeetingNotificationTests
         meetingRepoMock.Setup(r => r.GetAsync(meeting.Id)).ReturnsAsync(meeting);
 
         var service = new MeetingService(meetingRepoMock.Object, notificationServiceMock.Object);
-        meeting.Patient!.Email = null;
+        meeting.Patient!.Email = null!;
 
         var request = new ConfirmMeetingDto { MeetingId = meeting.Id, Notes = "Confirmed" };
 
@@ -643,7 +643,7 @@ public class MeetingNotificationTests
         meetingRepoMock.Setup(r => r.GetAsync(meeting.Id)).ReturnsAsync(meeting);
 
         var service = new MeetingService(meetingRepoMock.Object, notificationServiceMock.Object);
-        meeting.Patient!.Email = null;
+        meeting.Patient!.Email = null!;
 
         var request = new ConfirmMeetingDto { MeetingId = meeting.Id, Notes = "Confirmed" };
 
