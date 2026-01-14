@@ -76,6 +76,30 @@ public class MeetingController : ControllerBase
     /// Gets a specific meeting by Id.
     /// </summary>
     [Authorize]
+    [HttpGet("historic")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetUpcomingMeetings(bool historic)
+    {
+
+        if (!int.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out int userId))
+        {
+            return Unauthorized(new { message = "Not authenticated" });
+        }
+
+        var result = await _meetingService.GetMeetingsAsync(userId, historic);
+        if (!result.Success)
+        {
+            return NotFound(new { message = result.Message });
+        }
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Gets a specific meeting by Id.
+    /// </summary>
+    [Authorize]
     [HttpPut("{id}")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
