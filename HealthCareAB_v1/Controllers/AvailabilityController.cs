@@ -18,7 +18,7 @@ public class AvailabilityController : ControllerBase
     }
 
     [HttpPost("set-available")]
-    public async Task<IActionResult> SetAvailabilityAsync([FromBody] SetAvailabilityRequest request)
+    public async Task<IActionResult> SetAvailableAsync([FromBody] SetAvailabilityRequest request)
     {
         // Just copying MeetingController's auth checks to make sure we stay consistent with how we handle auth.
         if (!int.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var userId))
