@@ -87,7 +87,7 @@ public class MeetingService : IMeetingService
         meeting.ExpiresAt = null;
         await _meetingRepository.SaveChangesAsync();
 
-        if (meeting.Patient is null)
+        if (meeting.Patient?.Email is null)
         {
             // This should not be null, but if it is, just return the meeting.
             // Won't be any patient to notify anyway then.
@@ -112,16 +112,19 @@ public class MeetingService : IMeetingService
         {
             return new MeetingResponseDto { Success = false, Message = "Meeting not found" };
         }
+
         var patientCancel = meeting.PatientId == userId;
         var caregiverCancel = meeting.CaregiverId == userId;
         if (!patientCancel && !caregiverCancel)
         {
             return new MeetingResponseDto { Success = false, Message = "Invalid user" };
         }
+
         if (meeting.Status != MeetingStatus.Confirmed)
         {
             return new MeetingResponseDto { Success = false, Message = "Can only cancel confirmed meetings" };
         }
+
         if (meeting.StartTime < DateTime.Now.AddHours(23) && patientCancel) // Extra lenience because of DST.
         {
             return new MeetingResponseDto { Success = false, Message = "Can only cancel meetings at least 24 hours ahead" };
@@ -131,6 +134,90 @@ public class MeetingService : IMeetingService
         meeting.Notes = request.Notes;
         await _meetingRepository.SaveChangesAsync();
 
+        if (meeting.Patient?.Email is null)
+        {
+            return MeetingResponseDto.FromEntity(meeting);
+        }
+
+        await _notificationService.SendNotificationAsync(new MeetingCancelledEmailNotification()
+        {
+            RecipientUser = meeting.Patient,
+            Meeting = meeting,
+        });
+
         return MeetingResponseDto.FromEntity(meeting);
+    }
+
+    /// <summary>
+    /// Updates a meeting.
+    /// </summary>
+    /// <remarks>
+    /// If the meeting time should be updated a new meeting is created and the old one is canceled.
+    /// Otherwise we just update existing meeting Notes.
+    /// </remarks>
+    public async Task<MeetingResponseDto> UpdateAsync(UpdateMeetingDto request, int userId)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var meeting = await _meetingRepository.GetAsync(request.MeetingId);
+        if (meeting is null)
+        {
+            return new MeetingResponseDto { Success = false, Message = "Meeting not found" };
+        }
+
+        var patientUpdate = meeting.PatientId == userId;
+        var caregiverUpdate = meeting.CaregiverId == userId;
+        if (!patientUpdate && !caregiverUpdate)
+        {
+            return new MeetingResponseDto { Success = false, Message = "Invalid user" };
+        }
+
+        // Update notes and return updated Meeting
+        if (request.StartTime is null)
+        {
+            meeting.Notes = request.Notes;
+            await _meetingRepository.SaveChangesAsync();
+            return MeetingResponseDto.FromEntity(meeting);
+        }
+
+        // Try to create new meeting and cancel old meeting
+        if (meeting.StartTime < DateTime.Now.AddHours(23) && patientUpdate) // Extra lenience because of DST.
+        {
+            return new MeetingResponseDto { Success = false, Message = "Can only reschedule meetings at least 24 hours ahead" };
+        }
+
+        var newMeeting = new Meeting
+        {
+            StartTime = request.StartTime.Value,
+            EndTime = request.StartTime.Value.AddMinutes(30 * request.Slots),
+            PatientId = meeting.PatientId,
+            CaregiverId = meeting.CaregiverId,
+            Notes = request.Notes,
+            Status = MeetingStatus.Confirmed,
+        };
+
+        if (await _meetingRepository.TimeUnavailableAsync(newMeeting))
+        {
+            return new MeetingResponseDto() { Success = false, Message = "Meeting time unavailable" };
+        }
+
+        // Cancel old meeting and create new one
+        meeting.Canceled = true;
+        meeting.Notes = request.Notes;
+        await _meetingRepository.CreateAsync(newMeeting);
+        await _meetingRepository.SaveChangesAsync();
+
+        if (meeting.Patient?.Email is null)
+        {
+            return MeetingResponseDto.FromEntity(newMeeting);
+        }
+
+        await _notificationService.SendNotificationAsync(new MeetingUpdatedEmailNotification()
+        {
+            RecipientUser = meeting.Patient,
+            NewMeeting = newMeeting,
+            OldMeeting = meeting,
+        });
+
+        return MeetingResponseDto.FromEntity(newMeeting);
     }
 }
