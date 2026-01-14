@@ -111,8 +111,8 @@ public class FeedbackService : IFeedbackService
             Id = feedback.Id,
             Review = feedback.Review,
             Rating = feedback.Rating,
-            PatientName = $"{feedback.Patient!.FirstName} {feedback.Patient.LastName}",
-            CaregiverName = $"{feedback.Caregiver!.FirstName} {feedback.Caregiver.LastName}",
+            PatientName = $"{feedback.Patient?.FirstName} {feedback.Patient?.LastName}",
+            CaregiverName = $"{feedback.Caregiver?.FirstName} {feedback.Caregiver?.LastName}",
             MeetingId = feedback.MeetingId
         };
     }

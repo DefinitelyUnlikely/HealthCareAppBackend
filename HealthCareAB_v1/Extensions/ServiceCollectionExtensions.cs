@@ -17,7 +17,9 @@ namespace HealthCareAB_v1.Extensions
         {
             services.AddHttpContextAccessor(); // Required for AuthService to check current user
             services.AddScoped<IMeetingRepository, MeetingRepository>();
+            services.AddScoped<IFeedbackRepository, FeedbackRepository>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IFeedbackService, FeedbackService>();
             services.AddScoped<IMeetingService, MeetingService>();
             services.AddScoped<IJwtTokenService, JwtTokenService>();
             services.AddScoped<IAuthService, AuthService>();
