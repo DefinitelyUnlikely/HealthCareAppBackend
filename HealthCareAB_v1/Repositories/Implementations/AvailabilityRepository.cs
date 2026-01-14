@@ -1,3 +1,4 @@
+using HealthCareAB_v1.Models;
 using HealthCareAB_v1.Repositories.Interfaces;
 
 namespace HealthCareAB_v1.Repositories.Implementations;
@@ -6,12 +7,13 @@ public class AvailabilityRepository(IAppDbContext context) : IAvailabilityReposi
 {
     private readonly IAppDbContext _context = context ?? throw new ArgumentNullException(nameof(context));
 
-    public Task SaveAvailabilityAsync(int userId, DateTime? from, DateTime? to)
+    public async Task SaveAvailabilityAsync(Availability availability)
     {
-        throw new NotImplementedException();
+        await _context.Availabilities.AddAsync(availability);
+        await _context.SaveChangesAsync();
     }
 
-    public Task GetAvailabilityAsync(int userId, DateTime? from, DateTime? to)
+    public async Task GetAvailabilityAsync(int userId, DateTime? from, DateTime? to)
     {
         // How do I figure this one to work?
         // My first thought is simply taking the dates and 
