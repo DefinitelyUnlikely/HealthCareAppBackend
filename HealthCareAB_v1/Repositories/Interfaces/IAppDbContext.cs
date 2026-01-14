@@ -9,6 +9,7 @@ namespace HealthCareAB_v1.Repositories.Interfaces
         DbSet<User> Users { get; set; }
         DbSet<Meeting> Meetings { get; set; }
         DbSet<Feedback> Feedbacks { get; set; }
+        DbSet<Availability> Availabilities { get; set; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
