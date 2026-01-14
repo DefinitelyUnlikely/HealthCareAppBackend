@@ -8,5 +8,7 @@ public interface IMeetingService
     public Task<MeetingResponseDto> CreateAsync(CreateMeetingDto request);
     public Task<MeetingResponseDto> ConfirmAsync(ConfirmMeetingDto request, int userId);
     public Task<MeetingResponseDto> GetMeetingAsync(Guid id, int userId, bool isAdmin);
+    public Task<List<MeetingDto>> GetMeetingsAsync(int userId, bool historic);
     public Task<MeetingResponseDto> CancelAsync(CancelMeetingDto request, int userId);
+    public Task<MeetingResponseDto> UpdateAsync(UpdateMeetingDto request, int userId);
 }
