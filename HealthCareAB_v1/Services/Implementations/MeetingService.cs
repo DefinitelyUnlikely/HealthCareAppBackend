@@ -74,6 +74,10 @@ public class MeetingService : IMeetingService
         List<MeetingDto> result = [];
         foreach (var meeting in meetings)
         {
+            if (meeting.Canceled)
+            {
+                continue;
+            }
             result.Add(new MeetingDto()
             {
                 Id = meeting.Id,
@@ -81,7 +85,6 @@ public class MeetingService : IMeetingService
                 EndTime = meeting.EndTime,
                 Status = meeting.Status,
                 Notes = meeting.Notes,
-                Canceled = meeting.Canceled,
             });
         }
         return result;
