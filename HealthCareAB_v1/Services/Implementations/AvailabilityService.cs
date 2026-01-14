@@ -21,6 +21,7 @@ public class AvailabilityService(IAvailabilityRepository availabilityRepository)
 
     public async Task<List<Availability>> GetUnavailabilityAsync(int userId, DateTime? from = null, DateTime? to = null)
     {
-        return await availabilityRepository.GetUnavailabilityAsync(userId, from, to);
+        return await availabilityRepository.GetUnavailabilityAsync(userId, from ?? DateTime.Now,
+            to ?? DateTime.Now.AddMonths(3));
     }
 }
