@@ -23,7 +23,7 @@ public class LoginTests
         var authServiceMock = new Mock<IAuthService>();
         var loginDto = new LoginDto { Username = "test", Password = "password" };
         var authResponse = new AuthResponseDto
-            { Success = true, Message = "Login successful", Username = "test", Roles = new List<string> { "User" } };
+        { Success = true, Message = "Login successful", Username = "test", Roles = new List<string> { "User" } };
         var token = "valid_token";
 
         authServiceMock.Setup(s => s.LoginAsync(loginDto))
