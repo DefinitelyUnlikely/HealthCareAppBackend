@@ -480,4 +480,177 @@ public class MeetingNotificationTests
         // Assert
         notificationServiceMock.Verify(n => n.SendNotificationAsync(It.IsAny<Notification>()), Times.Never);
     }
+
+    [Fact]
+    public async Task ConfirmAsync_DoesNotSendNotification_WhenPatientEmailIsNull()
+    {
+        // Arrange
+        var meetingRepoMock = new Mock<IMeetingRepository>();
+        var notificationServiceMock = new Mock<INotificationService>();
+        var meeting = TestData.GetMockMeeting();
+        meeting.Status = MeetingStatus.Pending;
+        var userId = meeting.Patient!.Id;
+        meeting.PatientId = userId;
+
+        meetingRepoMock.Setup(r => r.GetAsync(meeting.Id)).ReturnsAsync(meeting);
+
+        var service = new MeetingService(meetingRepoMock.Object, notificationServiceMock.Object);
+        meeting.Patient.Email = null;
+
+        var request = new ConfirmMeetingDto { MeetingId = meeting.Id, Notes = "Confirmed" };
+
+        // Act
+        await service.ConfirmAsync(request, userId);
+
+        // Assert
+        notificationServiceMock.Verify(n => n.SendNotificationAsync(It.IsAny<Notification>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_SendsNotification_WhenPatientExists()
+    {
+        // Arrange
+        var meetingRepoMock = new Mock<IMeetingRepository>();
+        var notificationServiceMock = new Mock<INotificationService>();
+        var meeting = TestData.GetMockMeeting();
+        meeting.Status = MeetingStatus.Pending;
+        meeting.PatientId = meeting.Patient!.Id;
+        meetingRepoMock.Setup(r => r.GetAsync(meeting.Id)).ReturnsAsync(meeting);
+
+        var service = new MeetingService(meetingRepoMock.Object, notificationServiceMock.Object);
+
+        var request = new ConfirmMeetingDto { MeetingId = meeting.Id, Notes = "Confirmed" };
+        var userId = meeting.Patient.Id;
+
+        // Act
+        await service.ConfirmAsync(request, userId);
+
+        // Assert
+        notificationServiceMock.Verify(n => n.SendNotificationAsync(It.IsAny<MeetingConfirmedEmailNotification>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_DoesNotSendNotification_WhenPatientIsNull()
+    {
+        // Arrange
+        var meetingRepoMock = new Mock<IMeetingRepository>();
+        var notificationServiceMock = new Mock<INotificationService>();
+        var meeting = TestData.GetMockMeeting();
+        meeting.Status = MeetingStatus.Pending;
+        var userId = meeting.Patient!.Id;
+        meeting.PatientId = userId;
+
+        meetingRepoMock.Setup(r => r.GetAsync(meeting.Id)).ReturnsAsync(meeting);
+
+        var service = new MeetingService(meetingRepoMock.Object, notificationServiceMock.Object);
+        meeting.Patient = null;
+
+        var request = new ConfirmMeetingDto { MeetingId = meeting.Id, Notes = "Confirmed" };
+
+        // Act
+        await service.ConfirmAsync(request, userId);
+
+        // Assert
+        notificationServiceMock.Verify(n => n.SendNotificationAsync(It.IsAny<Notification>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_DoesNotSendNotification_WhenPatientEmailIsNull()
+    {
+        // Arrange
+        var meetingRepoMock = new Mock<IMeetingRepository>();
+        var notificationServiceMock = new Mock<INotificationService>();
+        var meeting = TestData.GetMockMeeting();
+        meeting.Status = MeetingStatus.Pending;
+        var userId = meeting.Patient!.Id;
+        meeting.PatientId = userId;
+
+        meetingRepoMock.Setup(r => r.GetAsync(meeting.Id)).ReturnsAsync(meeting);
+
+        var service = new MeetingService(meetingRepoMock.Object, notificationServiceMock.Object);
+        meeting.Patient!.Email = null;
+
+        var request = new ConfirmMeetingDto { MeetingId = meeting.Id, Notes = "Confirmed" };
+
+        // Act
+        await service.ConfirmAsync(request, userId);
+
+        // Assert
+        notificationServiceMock.Verify(n => n.SendNotificationAsync(It.IsAny<Notification>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task CancelAsync_SendsNotification_WhenPatientExists()
+    {
+        // Arrange
+        var meetingRepoMock = new Mock<IMeetingRepository>();
+        var notificationServiceMock = new Mock<INotificationService>();
+        var meeting = TestData.GetMockMeeting();
+        meeting.Status = MeetingStatus.Pending;
+        meeting.PatientId = meeting.Patient!.Id;
+        meetingRepoMock.Setup(r => r.GetAsync(meeting.Id)).ReturnsAsync(meeting);
+
+        var service = new MeetingService(meetingRepoMock.Object, notificationServiceMock.Object);
+
+        var request = new ConfirmMeetingDto { MeetingId = meeting.Id, Notes = "Confirmed" };
+        var userId = meeting.Patient.Id;
+
+        // Act
+        await service.ConfirmAsync(request, userId);
+
+        // Assert
+        notificationServiceMock.Verify(n => n.SendNotificationAsync(It.IsAny<MeetingConfirmedEmailNotification>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task CancelAsync_DoesNotSendNotification_WhenPatientIsNull()
+    {
+        // Arrange
+        var meetingRepoMock = new Mock<IMeetingRepository>();
+        var notificationServiceMock = new Mock<INotificationService>();
+        var meeting = TestData.GetMockMeeting();
+        meeting.Status = MeetingStatus.Pending;
+        var userId = meeting.Patient!.Id;
+        meeting.PatientId = userId;
+
+        meetingRepoMock.Setup(r => r.GetAsync(meeting.Id)).ReturnsAsync(meeting);
+
+        var service = new MeetingService(meetingRepoMock.Object, notificationServiceMock.Object);
+        meeting.Patient = null;
+
+        var request = new ConfirmMeetingDto { MeetingId = meeting.Id, Notes = "Confirmed" };
+
+        // Act
+        await service.ConfirmAsync(request, userId);
+
+        // Assert
+        notificationServiceMock.Verify(n => n.SendNotificationAsync(It.IsAny<Notification>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task CancelAsync_DoesNotSendNotification_WhenPatientEmailIsNull()
+    {
+        // Arrange
+        var meetingRepoMock = new Mock<IMeetingRepository>();
+        var notificationServiceMock = new Mock<INotificationService>();
+        var meeting = TestData.GetMockMeeting();
+        meeting.Status = MeetingStatus.Pending;
+        var userId = meeting.Patient!.Id;
+        meeting.PatientId = userId;
+
+        meetingRepoMock.Setup(r => r.GetAsync(meeting.Id)).ReturnsAsync(meeting);
+
+        var service = new MeetingService(meetingRepoMock.Object, notificationServiceMock.Object);
+        meeting.Patient!.Email = null;
+
+        var request = new ConfirmMeetingDto { MeetingId = meeting.Id, Notes = "Confirmed" };
+
+        // Act
+        await service.ConfirmAsync(request, userId);
+
+        // Assert
+        notificationServiceMock.Verify(n => n.SendNotificationAsync(It.IsAny<Notification>()), Times.Never);
+    }
 }
