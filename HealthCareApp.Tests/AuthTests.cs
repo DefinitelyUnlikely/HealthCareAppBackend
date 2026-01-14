@@ -14,6 +14,240 @@ using Moq;
 
 namespace HealthCareApp.Tests;
 
+public class LoginTests
+{
+    [Fact]
+    public async Task Login_ValidCredentials_ReturnsOkAndSetsCookie()
+    {
+        // Arrange
+        var authServiceMock = new Mock<IAuthService>();
+        var loginDto = new LoginDto { Username = "test", Password = "password" };
+        var authResponse = new AuthResponseDto
+            { Success = true, Message = "Login successful", Username = "test", Roles = new List<string> { "User" } };
+        var token = "valid_token";
+
+        authServiceMock.Setup(s => s.LoginAsync(loginDto))
+            .ReturnsAsync((authResponse, token));
+
+        authServiceMock.Setup(s => s.GetJwtCookieOptions())
+            .Returns(new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                Path = "/",
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddMinutes(15)
+            });
+
+        var httpContext = new DefaultHttpContext();
+        var controller = new AuthController(authServiceMock.Object)
+        {
+            ControllerContext = new ControllerContext
+            {
+                HttpContext = httpContext
+            }
+        };
+
+        // Act
+        var result = await controller.Login(loginDto);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        Assert.Equal(200, okResult.StatusCode);
+
+        var setCookieHeader = httpContext.Response.Headers.SetCookie;
+        Assert.Single(setCookieHeader);
+        Assert.Contains($"{CookieNames.Jwt}={token}", setCookieHeader.ToString());
+    }
+
+    [Fact]
+    public async Task Login_InvalidCredentials_ReturnsUnauthorized()
+    {
+        // Arrange
+        var authServiceMock = new Mock<IAuthService>();
+        var loginDto = new LoginDto { Username = "test", Password = "wrong_password" };
+        var authResponse = new AuthResponseDto { Success = false, Message = "Invalid username or password" };
+
+        authServiceMock.Setup(s => s.LoginAsync(loginDto))
+            .ReturnsAsync((authResponse, null));
+
+        var controller = new AuthController(authServiceMock.Object);
+
+        // Act
+        var result = await controller.Login(loginDto);
+
+        // Assert
+        var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result);
+        Assert.Equal(401, unauthorizedResult.StatusCode);
+    }
+
+    [Fact]
+    public async Task Login_EmptyToken_ReturnsUnauthorized_WhenSuccessIsFalse()
+    {
+        // Arrange
+        var authServiceMock = new Mock<IAuthService>();
+        var loginDto = new LoginDto { Username = "test", Password = "password" };
+        var authResponse = new AuthResponseDto { Success = true, Message = "Login successful?" };
+        var token = "";
+
+        authServiceMock.Setup(s => s.LoginAsync(loginDto))
+            .ReturnsAsync((authResponse, token));
+
+        var controller = new AuthController(authServiceMock.Object);
+
+        // Act
+        var result = await controller.Login(loginDto);
+
+        // Assert
+        var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result);
+        Assert.Equal(401, unauthorizedResult.StatusCode);
+    }
+
+    [Fact]
+    public async Task LoginAsync_ValidUserAndPassword_ReturnsSuccessAndToken()
+    {
+        // Arrange
+        var userServiceMock = new Mock<IUserService>();
+        var jwtTokenServiceMock = new Mock<IJwtTokenService>();
+        var jwtSettingsMock = new Mock<IOptions<JwtSettings>>();
+        var environmentMock = new Mock<IWebHostEnvironment>();
+        var httpContextAccessorMock = new Mock<IHttpContextAccessor>();
+
+        jwtSettingsMock.Setup(s => s.Value).Returns(new JwtSettings());
+
+        var user = new User
+        {
+            Username = "validuser",
+            PasswordHash = "hashedPassword",
+            Roles = new List<string> { "User" }
+        };
+
+        userServiceMock.Setup(u => u.GetUserByUsernameAsync("validuser"))
+            .ReturnsAsync(user);
+
+        userServiceMock.Setup(u => u.VerifyPassword("password123", "hashedPassword"))
+            .Returns(true);
+
+        jwtTokenServiceMock.Setup(t => t.GenerateToken(user))
+            .Returns("valid_token");
+
+        var authService = new AuthService(
+            userServiceMock.Object,
+            jwtTokenServiceMock.Object,
+            jwtSettingsMock.Object,
+            environmentMock.Object,
+            httpContextAccessorMock.Object);
+
+        var loginDto = new LoginDto
+        {
+            Username = "validuser",
+            Password = "password123"
+        };
+
+        // Act
+        var result = await authService.LoginAsync(loginDto);
+
+        // Assert
+        Assert.True(result.response.Success);
+        Assert.Equal("Login successful", result.response.Message);
+        Assert.Equal("validuser", result.response.Username);
+        Assert.Equal("valid_token", result.token);
+
+        userServiceMock.Verify(u => u.GetUserByUsernameAsync("validuser"), Times.Once);
+        userServiceMock.Verify(u => u.VerifyPassword("password123", "hashedPassword"), Times.Once);
+        jwtTokenServiceMock.Verify(t => t.GenerateToken(user), Times.Once);
+    }
+
+    [Fact]
+    public async Task LoginAsync_UserNotFound_ReturnsFailure()
+    {
+        // Arrange
+        var userServiceMock = new Mock<IUserService>();
+        var jwtTokenServiceMock = new Mock<IJwtTokenService>();
+        var jwtSettingsMock = new Mock<IOptions<JwtSettings>>();
+        var environmentMock = new Mock<IWebHostEnvironment>();
+        var httpContextAccessorMock = new Mock<IHttpContextAccessor>();
+
+        jwtSettingsMock.Setup(s => s.Value).Returns(new JwtSettings());
+
+        userServiceMock.Setup(u => u.GetUserByUsernameAsync("nonexistent"))
+            .ReturnsAsync((User?)null);
+
+        var authService = new AuthService(
+            userServiceMock.Object,
+            jwtTokenServiceMock.Object,
+            jwtSettingsMock.Object,
+            environmentMock.Object,
+            httpContextAccessorMock.Object);
+
+        var loginDto = new LoginDto
+        {
+            Username = "nonexistent",
+            Password = "password123"
+        };
+
+        // Act
+        var result = await authService.LoginAsync(loginDto);
+
+        // Assert
+        Assert.False(result.response.Success);
+        Assert.Equal("Invalid username or password", result.response.Message);
+        Assert.Null(result.token);
+
+        userServiceMock.Verify(u => u.GetUserByUsernameAsync("nonexistent"), Times.Once);
+        userServiceMock.Verify(u => u.VerifyPassword(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task LoginAsync_InvalidPassword_ReturnsFailure()
+    {
+        // Arrange
+        var userServiceMock = new Mock<IUserService>();
+        var jwtTokenServiceMock = new Mock<IJwtTokenService>();
+        var jwtSettingsMock = new Mock<IOptions<JwtSettings>>();
+        var environmentMock = new Mock<IWebHostEnvironment>();
+        var httpContextAccessorMock = new Mock<IHttpContextAccessor>();
+
+        jwtSettingsMock.Setup(s => s.Value).Returns(new JwtSettings());
+
+        var user = new User
+        {
+            Username = "validuser",
+            PasswordHash = "hashedPassword"
+        };
+
+        userServiceMock.Setup(u => u.GetUserByUsernameAsync("validuser"))
+            .ReturnsAsync(user);
+
+        userServiceMock.Setup(u => u.VerifyPassword("wrongpassword", "hashedPassword"))
+            .Returns(false);
+
+        var authService = new AuthService(
+            userServiceMock.Object,
+            jwtTokenServiceMock.Object,
+            jwtSettingsMock.Object,
+            environmentMock.Object,
+            httpContextAccessorMock.Object);
+
+        var loginDto = new LoginDto
+        {
+            Username = "validuser",
+            Password = "wrongpassword"
+        };
+
+        // Act
+        var result = await authService.LoginAsync(loginDto);
+
+        // Assert
+        Assert.False(result.response.Success);
+        Assert.Equal("Invalid username or password", result.response.Message);
+        Assert.Null(result.token);
+
+        userServiceMock.Verify(u => u.GetUserByUsernameAsync("validuser"), Times.Once);
+        userServiceMock.Verify(u => u.VerifyPassword("wrongpassword", "hashedPassword"), Times.Once);
+    }
+}
+
 public class LogoutTests
 {
     [Fact]
@@ -154,7 +388,6 @@ public class AuthServiceTests
         // Just assert that expires is in the past, exact time is not important and harder to test.
         Assert.True(options.Expires < DateTimeOffset.UtcNow);
     }
-
 
 
     [Fact]
