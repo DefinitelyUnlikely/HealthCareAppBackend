@@ -33,7 +33,7 @@ public class AvailabilityController : ControllerBase
         }
 
         await _availabilityService.SetAvailableAsync(request.UserId, request.From, request.To);
-        return Ok();
+        return Ok(); // TODO: Return something more useful
     }
 
     [HttpPost("set-unavailable")]
@@ -51,7 +51,8 @@ public class AvailabilityController : ControllerBase
             return Unauthorized(new { message = "Not authenticated" });
         }
 
-        await _availabilityService.SetUnavailableAsync(request.UserId, request.From, request.To, request.ForceCancel);
-        return Ok();
+        await _availabilityService.SetUnavailableAsync(request.UserId, request.From, request.To,
+            request.ForceCancel ?? false);
+        return Ok(); // TODO: Return something more useful
     }
 }
