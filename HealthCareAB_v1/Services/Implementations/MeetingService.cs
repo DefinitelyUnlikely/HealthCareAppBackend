@@ -68,6 +68,11 @@ public class MeetingService : IMeetingService
         return MeetingResponseDto.FromEntity(meeting);
     }
 
+    public async Task<MeetingsResponseDto> GetMeetingsAsync(int userId, bool historic)
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task<MeetingResponseDto> ConfirmAsync(ConfirmMeetingDto request, int userId)
     {
         ArgumentNullException.ThrowIfNull(request);
