@@ -68,10 +68,23 @@ public class MeetingService : IMeetingService
         return MeetingResponseDto.FromEntity(meeting);
     }
 
-    public async Task<MeetingsResponseDto> GetMeetingsAsync(int userId, bool historic)
+    public async Task<List<MeetingDto>> GetMeetingsAsync(int userId, bool historic)
     {
         var meetings = await _meetingRepository.GetByUserIdAsync(userId, historic);
-        return MeetingsResponseDto.FromEntity(meetings);
+        List<MeetingDto> result = [];
+        foreach (var meeting in meetings)
+        {
+            result.Add(new MeetingDto()
+            {
+                Id = meeting.Id,
+                StartTime = meeting.StartTime,
+                EndTime = meeting.EndTime,
+                Status = meeting.Status,
+                Notes = meeting.Notes,
+                Canceled = meeting.Canceled,
+            });
+        }
+        return result;
     }
 
     public async Task<MeetingResponseDto> ConfirmAsync(ConfirmMeetingDto request, int userId)
@@ -105,7 +118,6 @@ public class MeetingService : IMeetingService
             RecipientUser = meeting.Patient,
             Meeting = meeting,
         });
-
 
         return MeetingResponseDto.FromEntity(meeting);
     }

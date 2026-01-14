@@ -753,8 +753,7 @@ public class MeetingServiceTests
         var result = await service.GetMeetingsAsync(userId, historic);
 
         // Assert
-        Assert.True(result.Success);
-        Assert.Equal(2, result.Meetings.Count);
+        Assert.Equal(2, result.Count);
         mockRepo.Verify(r => r.GetByUserIdAsync(userId, historic), Times.Once);
     }
 
@@ -776,8 +775,7 @@ public class MeetingServiceTests
         var result = await service.GetMeetingsAsync(userId, historic);
 
         // Assert
-        Assert.True(result.Success);
-        Assert.Empty(result.Meetings);
+        Assert.Empty(result);
         mockRepo.Verify(r => r.GetByUserIdAsync(userId, historic), Times.Once);
     }
 }
