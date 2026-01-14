@@ -18,15 +18,9 @@ public class AvailabilityService(IAvailabilityRepository availabilityRepository,
     public async Task SetUnavailableAsync(int userId, DateTime? from = null, DateTime? to = null,
         bool forceCancel = false)
     {
-        // Now this one is a bit more complex. At least when forceCancel is false.
-        // If it is true, We "simply" get all meetings (for the caregiver) between from and to and delete them.
-        // then we call the repo and set the range as unavailable.
-
+        var meetings = await meetingService.GetMeetingsAsync(userId, false);
         if (forceCancel)
         {
-            // Get all meetings for the caregiver between from and to
-            var meetings = await meetingService.GetMeetingsAsync(userId, false);
-            // Delete all meetings for the caregiver between from and to
             foreach (var meeting in meetings)
             {
                 await meetingService.CancelAsync(new CancelMeetingDto
@@ -37,10 +31,21 @@ public class AvailabilityService(IAvailabilityRepository availabilityRepository,
             }
         }
 
-        throw new NotImplementedException();
+        // now to the tricky part...
+        // if forceCancel is false, we need to get all meetings for the caregiver between from and to
+        // just like before. (so we can put that outside the if statement). 
+        // BUT we need to now create a list of unavailabilities that fits between the meetings.
+
+        await availabilityRepository.SaveUnavailabilityAsync(new Unavailability
+        {
+            CaregiverId = userId,
+            StartDate = from ?? DateTime.Now,
+            EndDate = to ?? DateTime.Now.AddMonths(3)
+        });
     }
 
-    public async Task<List<Availability>> GetUnavailabilityAsync(int userId, DateTime? from = null, DateTime? to = null)
+    public async Task<List<Unavailability>> GetUnavailabilityAsync(int userId, DateTime? from = null,
+        DateTime? to = null)
     {
         return await availabilityRepository.GetUnavailabilityAsync(userId, from ?? DateTime.Now,
             to ?? DateTime.Now.AddMonths(3));

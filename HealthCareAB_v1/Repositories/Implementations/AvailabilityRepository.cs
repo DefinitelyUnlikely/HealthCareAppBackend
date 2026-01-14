@@ -8,22 +8,22 @@ public class AvailabilityRepository(IAppDbContext context) : IAvailabilityReposi
 {
     private readonly IAppDbContext _context = context ?? throw new ArgumentNullException(nameof(context));
 
-    public async Task SaveUnavailabilityAsync(Availability availability)
+    public async Task SaveUnavailabilityAsync(Unavailability availability)
     {
-        await _context.Availabilities.AddAsync(availability);
+        await _context.Unavailabilities.AddAsync(availability);
         await _context.SaveChangesAsync();
     }
 
-    public async Task<List<Availability>> GetUnavailabilityAsync(int userId, DateTime? from, DateTime? to)
+    public async Task<List<Unavailability>> GetUnavailabilityAsync(int userId, DateTime? from, DateTime? to)
     {
-        return await _context.Availabilities
+        return await _context.Unavailabilities
             .Where(a => a.CaregiverId == userId && a.StartDate <= to && a.EndDate >= from)
             .ToListAsync();
     }
 
     public async Task DeleteUnavailabilityAsync(int userId, DateTime? from, DateTime? to)
     {
-        var availability = await _context.Availabilities
+        var availability = await _context.Unavailabilities
             .Where(a => a.CaregiverId == userId && a.StartDate <= to && a.EndDate >= from)
             .ToListAsync();
 
@@ -32,7 +32,7 @@ public class AvailabilityRepository(IAppDbContext context) : IAvailabilityReposi
             throw new ArgumentException("Availability not found");
         }
 
-        _context.Availabilities.RemoveRange(availability);
+        _context.Unavailabilities.RemoveRange(availability);
         await _context.SaveChangesAsync();
     }
 }
