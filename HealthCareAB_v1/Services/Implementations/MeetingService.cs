@@ -12,11 +12,13 @@ public class MeetingService : IMeetingService
 {
     private readonly IMeetingRepository _meetingRepository;
     private readonly INotificationService _notificationService;
+    private readonly IUserService _userService;
 
-    public MeetingService(IMeetingRepository meetingRepository, INotificationService notificationService)
+    public MeetingService(IMeetingRepository meetingRepository, INotificationService notificationService, IUserService userService)
     {
         _meetingRepository = meetingRepository ?? throw new ArgumentNullException(nameof(meetingRepository));
         _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
+        _userService = userService ?? throw new ArgumentNullException(nameof(userService));
     }
 
     /// <summary>
@@ -29,6 +31,17 @@ public class MeetingService : IMeetingService
         ArgumentNullException.ThrowIfNull(request);
         var endTime = request.StartTime.AddMinutes(30 * request.Slots);
 
+        var patient = await _userService.GetUserByIdAsync(request.PatientId);
+        if (patient is null || !patient.Roles.Contains("Patient"))
+        {
+            return new MeetingResponseDto() { Success = false, Message = "The user is not a patient" };
+        }
+        var caregiver = await _userService.GetUserByIdAsync(request.CaregiverId);
+        if (caregiver is null || !caregiver.Roles.Contains("Caregiver"))
+        {
+            return new MeetingResponseDto() { Success = false, Message = "The user is not a caregiver" };
+        }
+
         var newMeeting = new Meeting
         {
             StartTime = request.StartTime,
@@ -36,6 +49,8 @@ public class MeetingService : IMeetingService
             ExpiresAt = DateTime.UtcNow.AddMinutes(15),
             PatientId = request.PatientId,
             CaregiverId = request.CaregiverId,
+            Patient = patient,
+            Caregiver = caregiver,
             Status = MeetingStatus.Pending,
         };
 
@@ -45,7 +60,6 @@ public class MeetingService : IMeetingService
         }
 
         await _meetingRepository.CreateAsync(newMeeting);
-        await _meetingRepository.GetAsync(newMeeting.Id);
         var response = MeetingResponseDto.FromEntity(newMeeting);
 
         return response;

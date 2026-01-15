@@ -46,7 +46,7 @@ jobs:
       run: dotnet build --configuration Release --no-restore # --configuration Debug if we're using a develop branch
       
     - name: Run tests with coverage
-      run: dotnet test --configuration Release --no-build --no-restore --collect:"XPlat Code Coverage"
+      run: dotnet test --configuration Release --no-build --no-restore --settings tests.runsettings
       # --configuration Debug if we're using a develop branch --collect:"XPlat Code Coverage" removed to allow excludes
     
     - name: Publish coverage
