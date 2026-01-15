@@ -438,12 +438,13 @@ public class MeetingNotificationTests
         // Arrange
         var meetingRepoMock = new Mock<IMeetingRepository>();
         var notificationServiceMock = new Mock<INotificationService>();
+        var userServiceMock = new Mock<IUserService>();
         var meeting = TestData.GetMockMeeting();
         meeting.Status = MeetingStatus.Pending;
         meeting.PatientId = meeting.Patient!.Id;
         meetingRepoMock.Setup(r => r.GetAsync(meeting.Id)).ReturnsAsync(meeting);
 
-        var service = new MeetingService(meetingRepoMock.Object, notificationServiceMock.Object);
+        var service = new MeetingService(meetingRepoMock.Object, notificationServiceMock.Object, userServiceMock.Object);
 
         var request = new ConfirmMeetingDto { MeetingId = meeting.Id, Notes = "Confirmed" };
         var userId = meeting.Patient.Id;
@@ -462,6 +463,7 @@ public class MeetingNotificationTests
         // Arrange
         var meetingRepoMock = new Mock<IMeetingRepository>();
         var notificationServiceMock = new Mock<INotificationService>();
+        var userServiceMock = new Mock<IUserService>();
         var meeting = TestData.GetMockMeeting();
         meeting.Status = MeetingStatus.Pending;
         var userId = meeting.Patient!.Id;
@@ -469,7 +471,7 @@ public class MeetingNotificationTests
 
         meetingRepoMock.Setup(r => r.GetAsync(meeting.Id)).ReturnsAsync(meeting);
 
-        var service = new MeetingService(meetingRepoMock.Object, notificationServiceMock.Object);
+        var service = new MeetingService(meetingRepoMock.Object, notificationServiceMock.Object, userServiceMock.Object);
         meeting.Patient = null;
 
         var request = new ConfirmMeetingDto { MeetingId = meeting.Id, Notes = "Confirmed" };
@@ -487,6 +489,7 @@ public class MeetingNotificationTests
         // Arrange
         var meetingRepoMock = new Mock<IMeetingRepository>();
         var notificationServiceMock = new Mock<INotificationService>();
+        var userServiceMock = new Mock<IUserService>();
         var meeting = TestData.GetMockMeeting();
         meeting.Status = MeetingStatus.Pending;
         var userId = meeting.Patient!.Id;
@@ -494,7 +497,7 @@ public class MeetingNotificationTests
 
         meetingRepoMock.Setup(r => r.GetAsync(meeting.Id)).ReturnsAsync(meeting);
 
-        var service = new MeetingService(meetingRepoMock.Object, notificationServiceMock.Object);
+        var service = new MeetingService(meetingRepoMock.Object, notificationServiceMock.Object, userServiceMock.Object);
         meeting.Patient.Email = null!;
 
         var request = new ConfirmMeetingDto { MeetingId = meeting.Id, Notes = "Confirmed" };
@@ -512,12 +515,13 @@ public class MeetingNotificationTests
         // Arrange
         var meetingRepoMock = new Mock<IMeetingRepository>();
         var notificationServiceMock = new Mock<INotificationService>();
+        var userServiceMock = new Mock<IUserService>();
         var meeting = TestData.GetMockMeeting();
         meeting.Status = MeetingStatus.Pending;
         meeting.PatientId = meeting.Patient!.Id;
         meetingRepoMock.Setup(r => r.GetAsync(meeting.Id)).ReturnsAsync(meeting);
 
-        var service = new MeetingService(meetingRepoMock.Object, notificationServiceMock.Object);
+        var service = new MeetingService(meetingRepoMock.Object, notificationServiceMock.Object, userServiceMock.Object);
 
         var request = new ConfirmMeetingDto { MeetingId = meeting.Id, Notes = "Confirmed" };
         var userId = meeting.Patient.Id;
@@ -536,6 +540,7 @@ public class MeetingNotificationTests
         // Arrange
         var meetingRepoMock = new Mock<IMeetingRepository>();
         var notificationServiceMock = new Mock<INotificationService>();
+        var userServiceMock = new Mock<IUserService>();
         var meeting = TestData.GetMockMeeting();
         meeting.Status = MeetingStatus.Pending;
         var userId = meeting.Patient!.Id;
@@ -543,7 +548,7 @@ public class MeetingNotificationTests
 
         meetingRepoMock.Setup(r => r.GetAsync(meeting.Id)).ReturnsAsync(meeting);
 
-        var service = new MeetingService(meetingRepoMock.Object, notificationServiceMock.Object);
+        var service = new MeetingService(meetingRepoMock.Object, notificationServiceMock.Object, userServiceMock.Object);
         meeting.Patient = null;
 
         var request = new ConfirmMeetingDto { MeetingId = meeting.Id, Notes = "Confirmed" };
@@ -561,6 +566,7 @@ public class MeetingNotificationTests
         // Arrange
         var meetingRepoMock = new Mock<IMeetingRepository>();
         var notificationServiceMock = new Mock<INotificationService>();
+        var userServiceMock = new Mock<IUserService>();
         var meeting = TestData.GetMockMeeting();
         meeting.Status = MeetingStatus.Pending;
         var userId = meeting.Patient!.Id;
@@ -568,7 +574,7 @@ public class MeetingNotificationTests
 
         meetingRepoMock.Setup(r => r.GetAsync(meeting.Id)).ReturnsAsync(meeting);
 
-        var service = new MeetingService(meetingRepoMock.Object, notificationServiceMock.Object);
+        var service = new MeetingService(meetingRepoMock.Object, notificationServiceMock.Object, userServiceMock.Object);
         meeting.Patient!.Email = null!;
 
         var request = new ConfirmMeetingDto { MeetingId = meeting.Id, Notes = "Confirmed" };
@@ -586,12 +592,13 @@ public class MeetingNotificationTests
         // Arrange
         var meetingRepoMock = new Mock<IMeetingRepository>();
         var notificationServiceMock = new Mock<INotificationService>();
+        var userServiceMock = new Mock<IUserService>();
         var meeting = TestData.GetMockMeeting();
         meeting.Status = MeetingStatus.Pending;
         meeting.PatientId = meeting.Patient!.Id;
         meetingRepoMock.Setup(r => r.GetAsync(meeting.Id)).ReturnsAsync(meeting);
 
-        var service = new MeetingService(meetingRepoMock.Object, notificationServiceMock.Object);
+        var service = new MeetingService(meetingRepoMock.Object, notificationServiceMock.Object, userServiceMock.Object);
 
         var request = new ConfirmMeetingDto { MeetingId = meeting.Id, Notes = "Confirmed" };
         var userId = meeting.Patient.Id;
@@ -610,6 +617,7 @@ public class MeetingNotificationTests
         // Arrange
         var meetingRepoMock = new Mock<IMeetingRepository>();
         var notificationServiceMock = new Mock<INotificationService>();
+        var userServiceMock = new Mock<IUserService>();
         var meeting = TestData.GetMockMeeting();
         meeting.Status = MeetingStatus.Pending;
         var userId = meeting.Patient!.Id;
@@ -617,7 +625,7 @@ public class MeetingNotificationTests
 
         meetingRepoMock.Setup(r => r.GetAsync(meeting.Id)).ReturnsAsync(meeting);
 
-        var service = new MeetingService(meetingRepoMock.Object, notificationServiceMock.Object);
+        var service = new MeetingService(meetingRepoMock.Object, notificationServiceMock.Object, userServiceMock.Object);
         meeting.Patient = null;
 
         var request = new ConfirmMeetingDto { MeetingId = meeting.Id, Notes = "Confirmed" };
@@ -635,6 +643,7 @@ public class MeetingNotificationTests
         // Arrange
         var meetingRepoMock = new Mock<IMeetingRepository>();
         var notificationServiceMock = new Mock<INotificationService>();
+        var userServiceMock = new Mock<IUserService>();
         var meeting = TestData.GetMockMeeting();
         meeting.Status = MeetingStatus.Pending;
         var userId = meeting.Patient!.Id;
@@ -642,7 +651,7 @@ public class MeetingNotificationTests
 
         meetingRepoMock.Setup(r => r.GetAsync(meeting.Id)).ReturnsAsync(meeting);
 
-        var service = new MeetingService(meetingRepoMock.Object, notificationServiceMock.Object);
+        var service = new MeetingService(meetingRepoMock.Object, notificationServiceMock.Object, userServiceMock.Object);
         meeting.Patient!.Email = null!;
 
         var request = new ConfirmMeetingDto { MeetingId = meeting.Id, Notes = "Confirmed" };
