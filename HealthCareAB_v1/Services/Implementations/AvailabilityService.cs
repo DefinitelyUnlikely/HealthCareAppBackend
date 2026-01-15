@@ -1,25 +1,98 @@
 using HealthCareAB_v1.Models;
+using HealthCareAB_v1.Repositories.Interfaces;
 using HealthCareAB_v1.Services.Interfaces;
 
 namespace HealthCareAB_v1.Services.Implementations
 {
-    public class AvailabilityService : IAvailabilityService
+    public class AvailabilityService(
+        IAvailabilityRepository availabilityRepository,
+        IMeetingRepository meetingRepository) : IAvailabilityService
     {
-        public Task SetAvailableAsync(int userId, DateTime? from = null, DateTime? to = null)
+        public async Task SetAvailableAsync(int userId, DateTime? from = null, DateTime? to = null)
         {
-            throw new NotImplementedException();
+            var availability = new Availability
+            {
+                CaregiverId = userId,
+                StartTime = from ?? DateTime.Now,
+                EndTime = to ?? DateTime.Now.AddMonths(3)
+            };
+
+            await availabilityRepository.SaveAvailabilityAsync(availability);
         }
 
-        public Task SetUnavailableAsync(int userId, DateTime? from = null, DateTime? to = null,
+        public async Task SetUnavailableAsync(int userId, DateTime? from = null, DateTime? to = null,
             bool forceCancel = false)
         {
             throw new NotImplementedException();
         }
 
-        public Task<List<Availability>> GetAvailabilityAsync(int userId, DateTime? from = null, DateTime? to = null,
+        public async Task<List<Availability>> GetAvailabilityAsync(int userId, DateTime? from = null,
+            DateTime? to = null,
             bool includeMeetings = false)
         {
-            throw new NotImplementedException();
+            var availability = await availabilityRepository.GetAvailabilityAsync(userId, from, to);
+
+            if (!includeMeetings)
+            {
+                return availability;
+            }
+
+            // Get all meetings, that are relevant to the timerange (i.e. overlap with the timerange)
+            // Decent chance I'm thinking about this in reverse...
+            var meetings = await meetingRepository.GetByUserIdAsync(userId, false);
+            var relevantMeetings = meetings
+                .Where(m => !m.Canceled && m.StartTime < (to ?? DateTime.Now.AddMonths(3)) &&
+                            m.EndTime > (from ?? DateTime.Now))
+                .OrderBy(m => m.StartTime)
+                .ToList();
+
+            if (relevantMeetings.Count == 0)
+            {
+                return availability;
+            }
+
+            var actualAvailabilities = new List<Availability>();
+
+            foreach (var a in availability)
+            {
+                var slotStart = a.StartTime;
+                var slotEnd = a.EndTime;
+
+                var overlappingMeetings = relevantMeetings
+                    .Where(m => m.StartTime < slotEnd && m.EndTime > slotStart)
+                    .OrderBy(m => m.StartTime)
+                    .ToList();
+
+                foreach (var meeting in overlappingMeetings)
+                {
+                    if (slotStart < meeting.StartTime)
+                    {
+                        actualAvailabilities.Add(new Availability
+                        {
+                            CaregiverId = userId,
+                            StartTime = slotStart,
+                            EndTime = meeting.StartTime
+                        });
+                    }
+
+                    if (meeting.EndTime > slotStart)
+                    {
+                        slotStart = meeting.EndTime;
+                    }
+                }
+
+                if (slotStart < slotEnd)
+                {
+                    actualAvailabilities.Add(new Availability
+                    {
+                        CaregiverId = userId,
+                        StartTime = slotStart,
+                        EndTime = slotEnd
+                    });
+                }
+            }
+
+            return actualAvailabilities;
         }
     }
 }
