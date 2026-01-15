@@ -38,7 +38,7 @@ namespace HealthCareAB_v1.Repositories
         public DbSet<Meeting> Meetings { get; set; }
         public DbSet<Caregiver> Caregivers { get; set; }
         public DbSet<Patient> Patients { get; set; }
-        public DbSet<Unavailability> Unavailabilities { get; set; }
+        public DbSet<Availability> Availabilities { get; set; }
         public DbSet<Feedback> Feedbacks { get; set; }
 
 
