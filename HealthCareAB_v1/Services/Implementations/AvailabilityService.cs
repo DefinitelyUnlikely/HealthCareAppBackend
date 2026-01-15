@@ -10,6 +10,11 @@ namespace HealthCareAB_v1.Services.Implementations
     {
         public async Task SetAvailableAsync(int userId, DateTime? from = null, DateTime? to = null)
         {
+            if (from > to)
+            {
+                throw new ArgumentException("Start time of range cannot be larger than end time of range");
+            }
+
             var availability = new Availability
             {
                 CaregiverId = userId,
@@ -23,6 +28,11 @@ namespace HealthCareAB_v1.Services.Implementations
         public async Task SetUnavailableAsync(int userId, DateTime? from = null, DateTime? to = null,
             bool forceCancel = false)
         {
+            if (from > to)
+            {
+                throw new ArgumentException("Start time of range cannot be larger than end time of range");
+            }
+
             throw new NotImplementedException();
         }
 
@@ -30,6 +40,12 @@ namespace HealthCareAB_v1.Services.Implementations
             DateTime? to = null,
             bool includeMeetings = false)
         {
+            if (from > to)
+            {
+                throw new ArgumentException("Start time of range cannot be larger than end time of range");
+            }
+
+            // Get all availabilities, that are relevant to the timerange (i.e. overlap with the timerange)
             var availability = await availabilityRepository.GetAvailabilityAsync(userId, from, to);
 
             if (!includeMeetings)
@@ -53,6 +69,8 @@ namespace HealthCareAB_v1.Services.Implementations
 
             var actualAvailabilities = new List<Availability>();
 
+            // Can't think of a way to do this without a nested loop... 
+            // I could possibly create some sort of recursive function? 
             foreach (var a in availability)
             {
                 var slotStart = a.StartTime;
