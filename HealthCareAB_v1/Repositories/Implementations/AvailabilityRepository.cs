@@ -27,11 +27,6 @@ public class AvailabilityRepository(IAppDbContext context) : IAvailabilityReposi
             .Where(a => a.CaregiverId == userId && a.StartTime <= to && a.EndTime >= from)
             .ToListAsync();
 
-        if (availability == null)
-        {
-            throw new ArgumentException("Availability not found");
-        }
-
         _context.Availabilities.RemoveRange(availability);
         await _context.SaveChangesAsync();
     }
