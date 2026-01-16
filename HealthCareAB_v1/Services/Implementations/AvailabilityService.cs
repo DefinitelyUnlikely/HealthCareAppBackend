@@ -10,6 +10,9 @@ namespace HealthCareAB_v1.Services.Implementations
     {
         public async Task SetAvailableAsync(int userId, DateTime? from = null, DateTime? to = null)
         {
+            // I'm throwing an exception here
+            // but we could invert the from and to values
+            // as a sort of assumption that the user simply put in the dates in the wrong order.
             if (from > to)
             {
                 throw new ArgumentException("Start time of range cannot be larger than end time of range");
@@ -33,7 +36,14 @@ namespace HealthCareAB_v1.Services.Implementations
                 throw new ArgumentException("Start time of range cannot be larger than end time of range");
             }
 
-            throw new NotImplementedException();
+            if (!forceCancel)
+            {
+                await availabilityRepository.DeleteAvailabilityAsync(userId, from, to);
+                return;
+            }
+
+            // if we force cancel, we need to delete the availability and all meetings in that range
+            await availabilityRepository.DeleteAvailabilityAsync(userId, from, to);
         }
 
         public async Task<List<Availability>> GetAvailabilityAsync(int userId, DateTime? from = null,
