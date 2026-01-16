@@ -1,3 +1,4 @@
+using HealthCareAB_v1.DTOs;
 using HealthCareAB_v1.Models;
 using HealthCareAB_v1.Repositories.Interfaces;
 using HealthCareAB_v1.Services.Interfaces;
@@ -6,7 +7,8 @@ namespace HealthCareAB_v1.Services.Implementations
 {
     public class AvailabilityService(
         IAvailabilityRepository availabilityRepository,
-        IMeetingRepository meetingRepository) : IAvailabilityService
+        IMeetingRepository meetingRepository,
+        IMeetingService meetingService) : IAvailabilityService
     {
         public async Task SetAvailableAsync(int userId, DateTime? from = null, DateTime? to = null)
         {
@@ -44,6 +46,28 @@ namespace HealthCareAB_v1.Services.Implementations
 
             // if we force cancel, we need to delete the availability and all meetings in that range
             await availabilityRepository.DeleteAvailabilityAsync(userId, from, to);
+
+            // still uncertain I am thinking about this correctly... But I'll copy the 
+            // logic to get relevant meetings from GetAvailabilityAsync.
+            // Althought... When getting Availability, we want to get the overlapping meetings cause those
+            // do indeed make you unavailable for the time that overlaps with your availability...
+            // But when you're forcing a cancel, should we only cancel meetings that's squarly inside the timerange?
+            // Or should we cancel all meetings that overlap with the timerange? I'll go with that for now.
+            var meetings = await meetingRepository.GetByUserIdAsync(userId, false);
+            var relevantMeetings = meetings
+                .Where(m => !m.Canceled && m.StartTime < (to ?? DateTime.Now.AddMonths(3)) &&
+                            m.EndTime > (from ?? DateTime.Now))
+                .OrderBy(m => m.StartTime)
+                .ToList();
+
+            foreach (var meeting in relevantMeetings)
+            {
+                await meetingService.CancelAsync(new CancelMeetingDto
+                {
+                    MeetingId = meeting.Id,
+                    Notes = "Vårdgivaren är inte längre tillgänglig"
+                }, userId);
+            }
         }
 
         public async Task<List<Availability>> GetAvailabilityAsync(int userId, DateTime? from = null,
