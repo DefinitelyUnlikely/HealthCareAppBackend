@@ -4,6 +4,7 @@ using HealthCareAB_v1.Services.Implementations;
 using Microsoft.Extensions.Configuration;
 using MimeKit;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace HealthCareApp.Tests;
 
@@ -25,9 +26,10 @@ public class EmailServiceTests
 
         var smptClientMock = new Mock<ISmtpClient>();
         var smtpClientFactoryMock = new Mock<ISmtpClientFactory>();
+        var loggerMock = new Mock<ILogger<MimeKitEmailService>>();
         smtpClientFactoryMock.Setup(factory => factory.CreateClient()).Returns(smptClientMock.Object);
 
-        var emailService = new MimeKitEmailService(configuration, smtpClientFactoryMock.Object);
+        var emailService = new MimeKitEmailService(configuration, smtpClientFactoryMock.Object, loggerMock.Object);
 
         // Act
         await emailService.SendEmailAsync(new IEmailService.Email
@@ -62,9 +64,10 @@ public class EmailServiceTests
 
         var smptClientMock = new Mock<ISmtpClient>();
         var smtpClientFactoryMock = new Mock<ISmtpClientFactory>();
+        var loggerMock = new Mock<ILogger<MimeKitEmailService>>();
         smtpClientFactoryMock.Setup(factory => factory.CreateClient()).Returns(smptClientMock.Object);
 
-        var emailService = new MimeKitEmailService(configuration, smtpClientFactoryMock.Object);
+        var emailService = new MimeKitEmailService(configuration, smtpClientFactoryMock.Object, loggerMock.Object);
 
         // Act
         await emailService.SendEmailAsync(new IEmailService.Email
@@ -101,9 +104,10 @@ public class EmailServiceTests
 
         var smptClientMock = new Mock<ISmtpClient>();
         var smtpClientFactoryMock = new Mock<ISmtpClientFactory>();
+        var loggerMock = new Mock<ILogger<MimeKitEmailService>>();
         smtpClientFactoryMock.Setup(factory => factory.CreateClient()).Returns(smptClientMock.Object);
 
-        var emailService = new MimeKitEmailService(configuration, smtpClientFactoryMock.Object);
+        var emailService = new MimeKitEmailService(configuration, smtpClientFactoryMock.Object, loggerMock.Object);
 
         // Act
         await emailService.SendEmailAsync(new IEmailService.Email
@@ -137,9 +141,10 @@ public class EmailServiceTests
 
         var smptClientMock = new Mock<ISmtpClient>();
         var smtpClientFactoryMock = new Mock<ISmtpClientFactory>();
+        var loggerMock = new Mock<ILogger<MimeKitEmailService>>();
         smtpClientFactoryMock.Setup(factory => factory.CreateClient()).Returns(smptClientMock.Object);
 
-        var emailService = new MimeKitEmailService(configuration, smtpClientFactoryMock.Object);
+        var emailService = new MimeKitEmailService(configuration, smtpClientFactoryMock.Object, loggerMock.Object);
 
         // Act
         await emailService.SendEmailAsync(new IEmailService.Email
@@ -173,9 +178,10 @@ public class EmailServiceTests
 
         var smptClientMock = new Mock<ISmtpClient>();
         var smtpClientFactoryMock = new Mock<ISmtpClientFactory>();
+        var loggerMock = new Mock<ILogger<MimeKitEmailService>>();
         smtpClientFactoryMock.Setup(factory => factory.CreateClient()).Returns(smptClientMock.Object);
 
-        var emailService = new MimeKitEmailService(configuration, smtpClientFactoryMock.Object);
+        var emailService = new MimeKitEmailService(configuration, smtpClientFactoryMock.Object, loggerMock.Object);
 
         // Act
         await emailService.SendEmailAsync(new IEmailService.Email
@@ -210,9 +216,10 @@ public class EmailServiceTests
 
         var smptClientMock = new Mock<ISmtpClient>();
         var smtpClientFactoryMock = new Mock<ISmtpClientFactory>();
+        var loggerMock = new Mock<ILogger<MimeKitEmailService>>();
         smtpClientFactoryMock.Setup(factory => factory.CreateClient()).Returns(smptClientMock.Object);
 
-        var emailService = new MimeKitEmailService(configuration, smtpClientFactoryMock.Object);
+        var emailService = new MimeKitEmailService(configuration, smtpClientFactoryMock.Object, loggerMock.Object);
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(async () =>
