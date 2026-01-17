@@ -36,14 +36,22 @@ namespace HealthCareAB_v1.Services.Implementations
         public async Task SetUnavailableAsync(int userId, DateTime? from = null, DateTime? to = null,
             bool forceCancel = false)
         {
+            if (from > to)
+            {
+                throw new ArgumentException("Start time of range cannot be larger than end time of range");
+            }
+
+            var startTime = from ?? DateTime.Now;
+            var endTime = to ?? DateTime.Now.AddMonths(3);
+
             // If forceCancel is not true and my new way of thinking of it works, 
             // all we need to do is remove the availability. 
-            await availabilityRepository.DeleteAvailabilityAsync(userId, from, to);
+            await availabilityRepository.DeleteAvailabilityAsync(userId, startTime, endTime);
 
             // then if forceCancel is true, we need to cancel all meetings in the range.
             if (forceCancel)
             {
-                var meetings = await GetOverlappingMeetings(userId, from.Value, to.Value);
+                var meetings = await GetOverlappingMeetings(userId, startTime, endTime);
                 foreach (var meeting in meetings)
                 {
                     await meetingService.CancelAsync(new CancelMeetingDto
