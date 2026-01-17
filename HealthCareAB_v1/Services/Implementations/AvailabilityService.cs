@@ -64,15 +64,19 @@ namespace HealthCareAB_v1.Services.Implementations
         }
 
         public async Task<List<Availability>> GetAvailabilityAsync(int userId, DateTime? from = null,
-            DateTime? to = null,
-            bool includeMeetings = false)
+            DateTime? to = null)
         {
             if (from > to)
             {
                 throw new ArgumentException("Start time of range cannot be larger than end time of range");
             }
 
-            throw new NotImplementedException();
+            var startTime = from ?? DateTime.Now;
+            var endTime = to ?? DateTime.Now.AddMonths(3);
+
+            var availability = await availabilityRepository.GetAvailabilityAsync(userId, startTime, endTime);
+
+            return availability;
         }
 
         public async Task<List<Meeting>> GetOverlappingMeetings(int userId, DateTime from, DateTime to)
