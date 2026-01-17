@@ -1,12 +1,14 @@
 using HealthCareAB_v1.Services.Interfaces;
 using HealthCareAB_v1.Utils;
 using MimeKit;
-using MimeKit.Text;
 
 namespace HealthCareAB_v1.Services.Implementations;
 
 // In testing, we use Mailpit to mock the SMTP server. Production would use a real SMTP server. 
-public class MimeKitEmailService(IConfiguration configuration, ISmtpClientFactory smtpClientFactory)
+public class MimeKitEmailService(
+    IConfiguration configuration,
+    ISmtpClientFactory smtpClientFactory,
+    ILogger<MimeKitEmailService> logger)
     : IEmailService
 {
     private readonly string _smtpHost = configuration.GetSection("SMTP").GetValue<string>("Host") ?? "localhost";
@@ -37,9 +39,18 @@ public class MimeKitEmailService(IConfiguration configuration, ISmtpClientFactor
 
         message.Body = bodyBuilder.ToMessageBody();
 
-        using var smtpClient = smtpClientFactory.CreateClient();
-        await smtpClient.ConnectAsync(_smtpHost, _smtpPort);
-        await smtpClient.SendAsync(message);
-        await smtpClient.DisconnectAsync(true);
+        // This should probably prevent the email service to be a single point of failure.
+        // If the email service fails, the application should continue to work.
+        try
+        {
+            using var smtpClient = smtpClientFactory.CreateClient();
+            await smtpClient.ConnectAsync(_smtpHost, _smtpPort);
+            await smtpClient.SendAsync(message);
+            await smtpClient.DisconnectAsync(true);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error sending email to {To}: {Message}", email.To, ex.Message);
+        }
     }
 }
