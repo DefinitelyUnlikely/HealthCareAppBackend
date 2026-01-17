@@ -20,6 +20,16 @@ namespace HealthCareAB_v1.Services.Implementations
             var startTime = from ?? DateTime.Now;
             var endTime = to ?? DateTime.Now.AddMonths(3);
 
+            if (startTime < startTime.Date.AddHours(8))
+            {
+                startTime = startTime.Date.AddHours(8);
+            }
+
+            if (endTime > endTime.Date.AddHours(16))
+            {
+                endTime = endTime.Date.AddHours(16);
+            }
+
             for (var day = startTime.Date; day <= endTime.Date; day = day.AddDays(1))
             {
                 var availability = new Availability
