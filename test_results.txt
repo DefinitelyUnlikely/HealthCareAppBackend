@@ -1,0 +1,11 @@
+﻿  Determining projects to restore...
+  All projects are up-to-date for restore.
+  HealthCareAB_v1 -> C:\Code\HealthCareAppBackend\HealthCareAB_v1\bin\Debug\net8.0\HealthCareAB_v1.dll
+  HealthCareApp.Tests -> C:\Code\HealthCareAppBackend\HealthCareApp.Tests\bin\Debug\net8.0\HealthCareApp.Tests.dll
+Test run for C:\Code\HealthCareAppBackend\HealthCareApp.Tests\bin\Debug\net8.0\HealthCareApp.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 18.0.1 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:    10, Skipped:     0, Total:    10, Duration: 69 ms - HealthCareApp.Tests.dll (net8.0)

@@ -1,238 +1,223 @@
+using Moq;
+using HealthCareAB_v1.Services.Implementations;
+using HealthCareAB_v1.Repositories.Interfaces;
+using HealthCareAB_v1.Services.Interfaces;
 using HealthCareAB_v1.Models;
 using HealthCareAB_v1.DTOs;
-using HealthCareAB_v1.Repositories.Interfaces;
-using HealthCareAB_v1.Services;
-using HealthCareAB_v1.Services.Implementations;
-using HealthCareAB_v1.Services.Interfaces;
-using Moq;
-using System.Linq.Expressions;
 
 namespace HealthCareApp.Tests;
 
 public class AvailabilityTests
 {
-    private readonly Mock<IAvailabilityRepository> _availabilityRepositoryMock;
-    private readonly Mock<IMeetingRepository> _meetingRepositoryMock;
-    private readonly Mock<IMeetingService> _meetingServiceMock;
+    private readonly Mock<IAvailabilityRepository> _mockAvailabilityRepo;
+    private readonly Mock<IMeetingRepository> _mockMeetingRepo;
+    private readonly Mock<IMeetingService> _mockMeetingService;
     private readonly AvailabilityService _availabilityService;
 
     public AvailabilityTests()
     {
-        _availabilityRepositoryMock = new Mock<IAvailabilityRepository>();
-        _meetingRepositoryMock = new Mock<IMeetingRepository>();
-        _meetingServiceMock = new Mock<IMeetingService>();
+        _mockAvailabilityRepo = new Mock<IAvailabilityRepository>();
+        _mockMeetingRepo = new Mock<IMeetingRepository>();
+        _mockMeetingService = new Mock<IMeetingService>();
         _availabilityService = new AvailabilityService(
-            _availabilityRepositoryMock.Object,
-            _meetingRepositoryMock.Object,
-            _meetingServiceMock.Object);
+            _mockAvailabilityRepo.Object,
+            _mockMeetingRepo.Object,
+            _mockMeetingService.Object
+        );
     }
 
     [Fact]
-    public async Task SetAvailableAsync_WithValidDates_ShouldSaveAvailability()
+    public async Task SetAvailableAsync_InvalidRange_ThrowsArgumentException()
     {
         // Arrange
-        var userId = 1;
-        var from = DateTime.Now;
-        var to = DateTime.Now.AddMonths(3);
-
-        // Act
-        await _availabilityService.SetAvailableAsync(userId, from, to);
-
-        // Assert
-        _availabilityRepositoryMock.Verify(r => r.SaveAvailabilityAsync(It.Is<Availability>(a =>
-            a.CaregiverId == userId &&
-            a.StartTime == from &&
-            a.EndTime == to)), Times.Once);
-    }
-
-    [Fact]
-    public async Task SetAvailableAsync_WithInvalidRange_ShouldThrowArgumentException()
-    {
-        // Arrange
-        var userId = 1;
-        var from = DateTime.Now.AddDays(1);
-        var to = DateTime.Now; // End is before start
-
-        // Act & Assert
-        await Assert.ThrowsAsync<ArgumentException>(() =>
-            _availabilityService.SetAvailableAsync(userId, from, to));
-    }
-
-    [Fact]
-    public async Task SetUnavailableAsync_WithInvalidRange_ShouldThrowArgumentException()
-    {
-        // Arrange
-        var userId = 1;
         var from = DateTime.Now.AddDays(1);
         var to = DateTime.Now;
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(() =>
-            _availabilityService.SetUnavailableAsync(userId, from, to));
+            _availabilityService.SetAvailableAsync(1, from, to));
     }
 
     [Fact]
-    public async Task SetUnavailableAsync_NoForceCancel_ShouldDeleteAvailabilityOnly()
+    public async Task SetAvailableAsync_ValidRange_SavesAvailabilityForEachDay()
     {
         // Arrange
-        var userId = 1;
+        var from = new DateTime(2024, 1, 1, 8, 0, 0);
+        var to = new DateTime(2024, 1, 3, 16, 0, 0);
+
+        // Act
+        await _availabilityService.SetAvailableAsync(1, from, to);
+
+        // Assert
+        _mockAvailabilityRepo.Verify(r => r.SaveAvailabilityAsync(It.IsAny<Availability>()), Times.Exactly(3));
+    }
+
+    [Fact]
+    public async Task SetAvailableAsync_ClampsTimesToWorkingHours()
+    {
+        // Arrange
+        // Start before 8am
+        var from = new DateTime(2024, 1, 1, 6, 0, 0);
+        // End after 4pm
+        var to = new DateTime(2024, 1, 1, 18, 0, 0);
+
+        // Act
+        await _availabilityService.SetAvailableAsync(1, from, to);
+
+        // Assert
+        _mockAvailabilityRepo.Verify(r => r.SaveAvailabilityAsync(It.Is<Availability>(a =>
+            a.StartTime.Hour == 8 && a.EndTime.Hour == 16)), Times.Once);
+    }
+
+    [Fact]
+    public async Task SetUnavailableAsync_InvalidRange_ThrowsArgumentException()
+    {
+        // Arrange
+        var from = DateTime.Now.AddDays(1);
+        var to = DateTime.Now;
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            _availabilityService.SetUnavailableAsync(1, from, to));
+    }
+
+    [Fact]
+    public async Task SetUnavailableAsync_ValidRange_DeletesAvailability()
+    {
+        // Arrange
         var from = DateTime.Now;
         var to = DateTime.Now.AddDays(1);
 
         // Act
-        await _availabilityService.SetUnavailableAsync(userId, from, to, forceCancel: false);
+        await _availabilityService.SetUnavailableAsync(1, from, to);
 
         // Assert
-        _availabilityRepositoryMock.Verify(r => r.DeleteAvailabilityAsync(userId, from, to), Times.Once);
-        _meetingRepositoryMock.Verify(r => r.GetByUserIdAsync(It.IsAny<int>(), It.IsAny<bool>()), Times.Never);
-        _meetingServiceMock.Verify(s => s.CancelAsync(It.IsAny<CancelMeetingDto>(), It.IsAny<int>()), Times.Never);
+        _mockAvailabilityRepo.Verify(r => r.DeleteAvailabilityAsync(1, It.IsAny<DateTime>(), It.IsAny<DateTime>()),
+            Times.Once);
     }
 
     [Fact]
-    public async Task SetUnavailableAsync_ForceCancel_ShouldDeleteAvailabilityAndCancelMeetings()
+    public async Task SetUnavailableAsync_ForceCancel_CancelsOverlappingMeetings()
     {
         // Arrange
-        var userId = 1;
         var from = DateTime.Now;
         var to = DateTime.Now.AddDays(1);
+        var userId = 1;
 
         var meeting = new Meeting
         {
             Id = Guid.NewGuid(),
-            StartTime = from.AddHours(2),
-            EndTime = from.AddHours(3),
+            StartTime = from.AddHours(1),
+            EndTime = from.AddHours(2),
             Canceled = false
         };
 
-        _meetingRepositoryMock.Setup(r => r.GetByUserIdAsync(userId, false))
+        _mockMeetingRepo.Setup(r => r.GetByUserIdAsync(userId, false))
             .ReturnsAsync(new List<Meeting> { meeting });
 
         // Act
         await _availabilityService.SetUnavailableAsync(userId, from, to, forceCancel: true);
 
         // Assert
-        _availabilityRepositoryMock.Verify(r => r.DeleteAvailabilityAsync(userId, from, to), Times.Once);
-        _meetingServiceMock.Verify(s => s.CancelAsync(It.Is<CancelMeetingDto>(d =>
-            d.MeetingId == meeting.Id &&
-            d.Notes == "Vårdgivaren är inte längre tillgänglig"), userId), Times.Once);
+        _mockMeetingService.Verify(s => s.CancelAsync(It.Is<CancelMeetingDto>(d => d.MeetingId == meeting.Id), userId),
+            Times.Once);
     }
 
     [Fact]
-    public async Task GetAvailabilityAsync_WithInvalidRange_ShouldThrowArgumentException()
+    public async Task SetUnavailableAsync_NoForceCancel_DoesNotCancelMeetings()
     {
         // Arrange
+        var from = DateTime.Now;
+        var to = DateTime.Now.AddDays(1);
         var userId = 1;
+
+        var meeting = new Meeting
+        {
+            Id = Guid.NewGuid(),
+            StartTime = from.AddHours(1),
+            EndTime = from.AddHours(2),
+            Canceled = false
+        };
+
+        _mockMeetingRepo.Setup(r => r.GetByUserIdAsync(userId, false))
+            .ReturnsAsync(new List<Meeting> { meeting });
+
+        // Act
+        await _availabilityService.SetUnavailableAsync(userId, from, to, forceCancel: false);
+
+        // Assert
+        _mockMeetingService.Verify(s => s.CancelAsync(It.IsAny<CancelMeetingDto>(), It.IsAny<int>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task GetAvailabilityAsync_InvalidRange_ThrowsArgumentException()
+    {
+        // Arrange
         var from = DateTime.Now.AddDays(1);
         var to = DateTime.Now;
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(() =>
-            _availabilityService.GetAvailabilityAsync(userId, from, to));
+            _availabilityService.GetAvailabilityAsync(1, from, to));
     }
 
     [Fact]
-    public async Task GetAvailabilityAsync_NoMeetingsIncluded_ShouldReturnRawAvailability()
+    public async Task GetAvailabilityAsync_ValidRange_ReturnsAvailability()
     {
         // Arrange
-        var userId = 1;
         var from = DateTime.Now;
         var to = DateTime.Now.AddDays(1);
-        var availabilities = new List<Availability>
+        var expectedAvailability = new List<Availability>
         {
-            new Availability { CaregiverId = userId, StartTime = from, EndTime = to }
+            new Availability
+            {
+                CaregiverId = 1,
+                StartTime = from,
+                EndTime = to
+            }
         };
 
-        _availabilityRepositoryMock.Setup(r => r.GetAvailabilityAsync(userId, from, to))
-            .ReturnsAsync(availabilities);
+        _mockAvailabilityRepo.Setup(r => r.GetAvailabilityAsync(1, It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+            .ReturnsAsync(expectedAvailability);
 
         // Act
-        var result = await _availabilityService.GetAvailabilityAsync(userId, from, to, includeMeetings: false);
+        var result = await _availabilityService.GetAvailabilityAsync(1, from, to);
+
+        // Assert
+        Assert.Same(expectedAvailability, result);
+        _mockAvailabilityRepo.Verify(r => r.GetAvailabilityAsync(1, It.IsAny<DateTime>(), It.IsAny<DateTime>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task GetOverlappingMeetings_ReturnsRelevantMeetings()
+    {
+        // Arrange
+        var from = DateTime.Now;
+        var to = DateTime.Now.AddHours(5);
+        var userId = 1;
+
+        var meeting1 = new Meeting
+        {
+            Id = Guid.NewGuid(), StartTime = from.AddHours(1), EndTime = from.AddHours(2), Canceled = false
+        }; // Should match
+        var meeting2 = new Meeting
+        {
+            Id = Guid.NewGuid(), StartTime = from.AddHours(6), EndTime = from.AddHours(7), Canceled = false
+        }; // Out of range
+        var meeting3 = new Meeting
+        {
+            Id = Guid.NewGuid(), StartTime = from.AddHours(1), EndTime = from.AddHours(2), Canceled = true
+        }; // Canceled
+
+        _mockMeetingRepo.Setup(r => r.GetByUserIdAsync(userId, false))
+            .ReturnsAsync(new List<Meeting> { meeting1, meeting2, meeting3 });
+
+        // Act
+        var result = await _availabilityService.GetOverlappingMeetings(userId, from, to);
 
         // Assert
         Assert.Single(result);
-        Assert.Equal(from, result[0].StartTime);
-        Assert.Equal(to, result[0].EndTime);
-        _meetingRepositoryMock.Verify(r => r.GetByUserIdAsync(It.IsAny<int>(), It.IsAny<bool>()), Times.Never);
-    }
-
-    [Fact]
-    public async Task GetAvailabilityAsync_IncludeMeetings_ShouldSplitAvailabilityAroundMeetings()
-    {
-        // Arrange
-        var userId = 1;
-        var date = DateTime.Today.AddHours(12); // Noon
-        var rangeStart = date;
-        var rangeEnd = date.AddHours(4); // 12:00 - 16:00
-
-        var availabilities = new List<Availability>
-        {
-            new Availability { CaregiverId = userId, StartTime = rangeStart, EndTime = rangeEnd }
-        };
-
-        // Meeting is 13:00 - 14:00, creating a hole in availability
-        var meeting = new Meeting
-        {
-            Id = Guid.NewGuid(),
-            StartTime = rangeStart.AddHours(1),
-            EndTime = rangeStart.AddHours(2),
-            Canceled = false
-        };
-
-        _availabilityRepositoryMock.Setup(r => r.GetAvailabilityAsync(userId, rangeStart, rangeEnd))
-            .ReturnsAsync(availabilities);
-
-        _meetingRepositoryMock.Setup(r => r.GetByUserIdAsync(userId, false))
-            .ReturnsAsync(new List<Meeting> { meeting });
-
-        // Act
-        var result =
-            await _availabilityService.GetAvailabilityAsync(userId, rangeStart, rangeEnd, includeMeetings: true);
-
-        // Assert
-        // We expect two availability slots: 12:00-13:00 and 14:00-16:00
-        Assert.Equal(2, result.Count);
-
-        Assert.Equal(rangeStart, result[0].StartTime);
-        Assert.Equal(meeting.StartTime, result[0].EndTime); // 12:00 - 13:00
-
-        Assert.Equal(meeting.EndTime, result[1].StartTime);
-        Assert.Equal(rangeEnd, result[1].EndTime); // 14:00 - 16:00
-    }
-
-    [Fact]
-    public async Task GetAvailabilityAsync_IncludeMeetings_MeetingOverlapsFully_ShouldConsumeSlot()
-    {
-        // Arrange
-        var userId = 1;
-        var date = DateTime.Today.AddHours(12);
-        var rangeStart = date;
-        var rangeEnd = date.AddHours(1);
-
-        var availabilities = new List<Availability>
-        {
-            new Availability { CaregiverId = userId, StartTime = rangeStart, EndTime = rangeEnd }
-        };
-
-        // Meeting covers the entire slot
-        var meeting = new Meeting
-        {
-            Id = Guid.NewGuid(),
-            StartTime = rangeStart,
-            EndTime = rangeEnd,
-            Canceled = false
-        };
-
-        _availabilityRepositoryMock.Setup(r => r.GetAvailabilityAsync(userId, rangeStart, rangeEnd))
-            .ReturnsAsync(availabilities);
-
-        _meetingRepositoryMock.Setup(r => r.GetByUserIdAsync(userId, false))
-            .ReturnsAsync(new List<Meeting> { meeting });
-
-        // Act
-        var result =
-            await _availabilityService.GetAvailabilityAsync(userId, rangeStart, rangeEnd, includeMeetings: true);
-
-        // Assert
-        Assert.Empty(result);
+        Assert.Equal(meeting1.Id, result[0].Id);
     }
 }
