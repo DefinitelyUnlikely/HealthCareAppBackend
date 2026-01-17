@@ -53,12 +53,8 @@ namespace HealthCareAB_v1.Services.Implementations
             // do indeed make you unavailable for the time that overlaps with your availability...
             // But when you're forcing a cancel, should we only cancel meetings that's squarly inside the timerange?
             // Or should we cancel all meetings that overlap with the timerange? I'll go with that for now.
-            var meetings = await meetingRepository.GetByUserIdAsync(userId, false);
-            var relevantMeetings = meetings
-                .Where(m => !m.Canceled && m.StartTime < (to ?? DateTime.Now.AddMonths(3)) &&
-                            m.EndTime > (from ?? DateTime.Now))
-                .OrderBy(m => m.StartTime)
-                .ToList();
+            var relevantMeetings =
+                await GetOverlappingMeetings(userId, from ?? DateTime.Now, to ?? DateTime.Now.AddMonths(3));
 
             foreach (var meeting in relevantMeetings)
             {
@@ -89,12 +85,8 @@ namespace HealthCareAB_v1.Services.Implementations
 
             // Get all meetings, that are relevant to the timerange (i.e. overlap with the timerange)
             // Decent chance I'm thinking about this in reverse...
-            var meetings = await meetingRepository.GetByUserIdAsync(userId, false);
-            var relevantMeetings = meetings
-                .Where(m => !m.Canceled && m.StartTime < (to ?? DateTime.Now.AddMonths(3)) &&
-                            m.EndTime > (from ?? DateTime.Now))
-                .OrderBy(m => m.StartTime)
-                .ToList();
+            var relevantMeetings =
+                await GetOverlappingMeetings(userId, from ?? DateTime.Now, to ?? DateTime.Now.AddMonths(3));
 
             if (relevantMeetings.Count == 0)
             {
@@ -145,6 +137,17 @@ namespace HealthCareAB_v1.Services.Implementations
             }
 
             return actualAvailabilities;
+        }
+
+        public async Task<List<Meeting>> GetOverlappingMeetings(int userId, DateTime from, DateTime to)
+        {
+            var meetings = await meetingRepository.GetByUserIdAsync(userId, false);
+            var relevantMeetings = meetings
+                .Where(m => !m.Canceled && m.StartTime < to && m.EndTime > from)
+                .OrderBy(m => m.StartTime)
+                .ToList();
+
+            return relevantMeetings;
         }
     }
 }
