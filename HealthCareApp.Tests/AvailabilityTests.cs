@@ -199,15 +199,24 @@ public class AvailabilityTests
 
         var meeting1 = new Meeting
         {
-            Id = Guid.NewGuid(), StartTime = from.AddHours(1), EndTime = from.AddHours(2), Canceled = false
+            Id = Guid.NewGuid(),
+            StartTime = from.AddHours(1),
+            EndTime = from.AddHours(2),
+            Canceled = false
         }; // Should match
         var meeting2 = new Meeting
         {
-            Id = Guid.NewGuid(), StartTime = from.AddHours(6), EndTime = from.AddHours(7), Canceled = false
+            Id = Guid.NewGuid(),
+            StartTime = from.AddHours(6),
+            EndTime = from.AddHours(7),
+            Canceled = false
         }; // Out of range
         var meeting3 = new Meeting
         {
-            Id = Guid.NewGuid(), StartTime = from.AddHours(1), EndTime = from.AddHours(2), Canceled = true
+            Id = Guid.NewGuid(),
+            StartTime = from.AddHours(1),
+            EndTime = from.AddHours(2),
+            Canceled = true
         }; // Canceled
 
         _mockMeetingRepo.Setup(r => r.GetByUserIdAsync(userId, false))
