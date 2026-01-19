@@ -119,10 +119,7 @@ public class AvailabilityControllerTests
     public async Task SetAvailability_DifferentUserNotAdmin_ReturnsUnauthorized()
     {
         // Arrange
-        var request = new SetAvailabilityRequest
-        {
-            UserId = 2, From = DateTime.Now, To = DateTime.Now.AddDays(1)
-        }; // Requesting for user 2, authenticated as user 1
+        var request = new SetAvailabilityRequest { UserId = 2, From = DateTime.Now, To = DateTime.Now.AddDays(1) };
 
         // Act
         var result = await _controller.SetAvailability(request);
@@ -152,8 +149,7 @@ public class AvailabilityControllerTests
     public async Task SetUnavailable_ValidRequest_ReturnsOk()
     {
         // Arrange
-        var request = new SetAvailabilityRequest
-            { UserId = 1, From = DateTime.Now, To = DateTime.Now.AddDays(1), ForceCancel = true };
+        var request = new SetAvailabilityRequest { UserId = 1, From = DateTime.Now, To = DateTime.Now.AddDays(1), ForceCancel = true };
         _mockService.Setup(s => s.SetUnavailableAsync(1, request.From, request.To, true))
             .Returns(Task.CompletedTask);
 
