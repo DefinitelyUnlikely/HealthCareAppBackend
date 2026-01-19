@@ -16,17 +16,17 @@ public class AvailabilityController(IAvailabilityService availabilityService) : 
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetFreeTimeslots([FromQuery] GetAvailabilityRequest request)
+    public async Task<IActionResult> GetAvailability([FromQuery] GetAvailabilityRequest request)
     {
         try
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
+            if (!int.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out int userId))
             {
-                return Unauthorized();
+                return Unauthorized(new { message = "Not authenticated" });
             }
 
-            return Ok();
+            var result = await availabilityService.GetAvailabilityAsync(userId, request.From, request.To);
+            return Ok(result);
         }
         catch (ArgumentException ex)
         {
@@ -49,12 +49,18 @@ public class AvailabilityController(IAvailabilityService availabilityService) : 
     {
         try
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
+            if (!int.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out int userId))
             {
-                return Unauthorized();
+                return Unauthorized(new { message = "Not authenticated" });
             }
 
+            bool isAdmin = User.IsInRole("Admin");
+            if (request.UserId != userId && !isAdmin)
+            {
+                return Unauthorized(new { message = "Not authorized" });
+            }
+
+            await availabilityService
             return Ok(new { message = "Availability set successfully" });
         }
         catch (ArgumentException ex)
