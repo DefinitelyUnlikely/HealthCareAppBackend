@@ -19,18 +19,19 @@ namespace HealthCareAB_v1.Repositories
             modelBuilder.UseSerialColumns();
 
             var rolesConverter = new ValueConverter<List<string>, string>(
-            v => JsonSerializer.Serialize(v, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }),
-            v => JsonSerializer.Deserialize<List<string>>(v, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<string>());
+                v => JsonSerializer.Serialize(v, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }),
+                v => JsonSerializer.Deserialize<List<string>>(v,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<string>());
 
             modelBuilder.Entity<User>()
-            .Property(e => e.Roles)
-            .HasConversion(rolesConverter)
-            .HasColumnType("jsonb");
+                .Property(e => e.Roles)
+                .HasConversion(rolesConverter)
+                .HasColumnType("jsonb");
 
             modelBuilder.Entity<Meeting>()
-            .Property(e => e.Status)
-            .HasConversion<string>()
-            .HasColumnType("text");
+                .Property(e => e.Status)
+                .HasConversion<string>()
+                .HasColumnType("text");
         }
 
         public DbSet<User> Users { get; set; }
