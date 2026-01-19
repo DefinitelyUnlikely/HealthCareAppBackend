@@ -73,4 +73,40 @@ public class AvailabilityController(IAvailabilityService availabilityService) : 
                 new { error = ex.Message });
         }
     }
+
+    [HttpPost]
+    [Route("set-unavailable")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> SetUnavailable([FromBody] SetAvailabilityRequest request)
+    {
+        try
+        {
+            if (!int.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out int userId))
+            {
+                return Unauthorized(new { message = "Not authenticated" });
+            }
+
+            bool isAdmin = User.IsInRole("Admin");
+            if (request.UserId != userId && !isAdmin)
+            {
+                return Unauthorized(new { message = "Not authorized" });
+            }
+
+            await availabilityService.SetUnavailableAsync(userId, request.From, request.To,
+                request.ForceCancel ?? false);
+            return Ok(new { message = "Unavailability set successfully" });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                new { error = ex.Message });
+        }
+    }
 }
