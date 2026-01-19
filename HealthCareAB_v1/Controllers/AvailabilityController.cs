@@ -40,7 +40,7 @@ public class AvailabilityController : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(StatusCodes.Status500InternalServerError,
-                new { error = "An error occurred while getting free timeslots" });
+                new { error = ex.Message });
         }
     }
 
@@ -69,7 +69,7 @@ public class AvailabilityController : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(StatusCodes.Status500InternalServerError,
-                new { error = "An error occurred while setting availability" });
+                new { error = ex.Message });
         }
     }
 }
