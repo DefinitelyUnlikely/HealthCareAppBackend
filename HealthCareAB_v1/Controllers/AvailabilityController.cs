@@ -60,7 +60,7 @@ public class AvailabilityController(IAvailabilityService availabilityService) : 
                 return Unauthorized(new { message = "Not authorized" });
             }
 
-            await availabilityService
+            await availabilityService.SetAvailableAsync(userId, request.From, request.To);
             return Ok(new { message = "Availability set successfully" });
         }
         catch (ArgumentException ex)
