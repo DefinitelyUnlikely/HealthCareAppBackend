@@ -11,10 +11,17 @@ namespace HealthCareAB_v1.Controllers;
 [Produces("application/json")]
 public class ScheduleController(IScheduleService scheduleService) : ControllerBase
 {
-    [HttpGet]
-    [Authorize] // possibly not needed, maybe anyone should be able to see the schedule?
-    public async Task<IActionResult> GetSchedule()
+    [HttpGet("{careGiverId:int}")]
+    public async Task<IActionResult> GetSchedule([FromRoute] int careGiverId, [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to)
     {
-        return Ok();
+        try
+        {
+            return Ok(await scheduleService.GetFreeTimeSlotsForCareGiver(careGiverId, from, to));
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
     }
 }
