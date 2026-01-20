@@ -27,7 +27,8 @@ public class ScheduleService(IAvailabilityService availabilityService, IMeetingR
         var meetings = await meetingRepository.GetAllAsync(startTime, endTime);
     }
 
-    public async Task GetFreeTimeSlotsForCareGiver(int careGiverId, DateTime? from = null, DateTime? to = null)
+    public async Task<List<AvailabilityDto>> GetFreeTimeSlotsForCareGiver(int careGiverId, DateTime? from = null,
+        DateTime? to = null)
     {
         if (from > to)
         {
@@ -47,12 +48,50 @@ public class ScheduleService(IAvailabilityService availabilityService, IMeetingR
         var availableTimeSlots = await availabilityService.GetAvailabilityAsync(careGiverId, startTime, endTime);
         var meetings = await meetingRepository.GetByUserIdAsync(careGiverId, false);
 
-        var meetingsInTimeRange = meetings.Where(m => m.StartTime >= startTime && m.EndTime <= endTime);
+        var meetingsInTimeRange = meetings.Where(m => m.StartTime < endTime && m.EndTime > startTime)
+            .OrderBy(m => m.StartTime).ToList();
 
         List<AvailabilityDto> freeTimeslots = [];
 
         foreach (var slot in availableTimeSlots)
         {
+            var currentStart = slot.StartTime;
+            var currentEnd = slot.EndTime;
+
+            var overlappingMeetings = meetingsInTimeRange
+                .Where(m => m.StartTime < currentEnd && m.EndTime > currentStart)
+                .OrderBy(m => m.StartTime)
+                .ToList();
+
+            foreach (var meeting in overlappingMeetings)
+            {
+                if (meeting.StartTime > currentStart)
+                {
+                    freeTimeslots.Add(new AvailabilityDto
+                    {
+                        CareGiverIds = [slot.CaregiverId],
+                        StartTime = currentStart,
+                        EndTime = meeting.StartTime
+                    });
+                }
+
+                if (meeting.EndTime > currentStart)
+                {
+                    currentStart = meeting.EndTime;
+                }
+            }
+
+            if (currentStart < currentEnd)
+            {
+                freeTimeslots.Add(new AvailabilityDto
+                {
+                    CareGiverIds = [slot.CaregiverId],
+                    StartTime = currentStart,
+                    EndTime = currentEnd
+                });
+            }
         }
+
+        return freeTimeslots;
     }
 }
