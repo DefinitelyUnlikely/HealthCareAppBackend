@@ -14,8 +14,15 @@ public class AvailabilityRepository(IAppDbContext context) : IAvailabilityReposi
         await _context.SaveChangesAsync();
     }
 
-    public async Task<List<Availability>> GetAvailabilityAsync(int userId, DateTime? from, DateTime? to)
+    public async Task<List<Availability>> GetAvailabilityAsync(int? userId, DateTime? from, DateTime? to)
     {
+        if (userId == null)
+        {
+            return await _context.Availabilities
+                .Where(a => a.StartTime <= to && a.EndTime >= from)
+                .ToListAsync();
+        }
+
         return await _context.Availabilities
             .Where(a => a.CaregiverId == userId && a.StartTime <= to && a.EndTime >= from)
             .ToListAsync();
