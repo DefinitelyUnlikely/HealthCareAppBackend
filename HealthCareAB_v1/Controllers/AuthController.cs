@@ -57,7 +57,7 @@ namespace HealthCareAB_v1.Controllers
             var cookieOptions = _authService.GetJwtCookieOptions();
             HttpContext.Response.Cookies.Append(CookieNames.Jwt, token, cookieOptions);
 
-            return Ok(new { message = result.Message, username = result.Username, roles = result.Roles });
+            return Ok(new { message = result.Message, id = result.Id, username = result.Username, roles = result.Roles });
         }
 
         /// <summary>
@@ -87,13 +87,18 @@ namespace HealthCareAB_v1.Controllers
                 return Unauthorized(new { message = "Not authenticated" });
             }
 
+            if (!int.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out int id))
+            {
+                return Unauthorized(new { message = "Not authenticated" });
+            }
+
             var username = User.Identity.Name ?? "Unknown";
             var roles = User.Claims
                 .Where(c => c.Type == ClaimTypes.Role)
                 .Select(c => c.Value)
                 .ToList();
 
-            return Ok(new { message = "Authenticated", username, roles });
+            return Ok(new { message = "Authenticated", id, username, roles });
         }
     }
 }
