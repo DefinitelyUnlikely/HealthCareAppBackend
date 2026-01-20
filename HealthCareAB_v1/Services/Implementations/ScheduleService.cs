@@ -1,3 +1,4 @@
+using HealthCareAB_v1.DTOs.Availability;
 using HealthCareAB_v1.Repositories.Interfaces;
 using HealthCareAB_v1.Services.Interfaces;
 
@@ -6,7 +7,7 @@ namespace HealthCareAB_v1.Services.Implementations;
 public class ScheduleService(IAvailabilityService availabilityService, IMeetingRepository meetingRepository)
     : IScheduleService
 {
-    public Task GetFreeTimeSlots(DateTime? from = null, DateTime? to = null)
+    public async Task GetFreeTimeSlots(DateTime? from = null, DateTime? to = null)
     {
         if (from > to)
         {
@@ -22,8 +23,8 @@ public class ScheduleService(IAvailabilityService availabilityService, IMeetingR
             throw new ArgumentException("To date must be within 90 days from from date");
         }
 
-        var availableTimeSlots = availabilityService.GetAvailabilityAsync(null, startTime, endTime);
-        var meetings = meetingRepository.GetAllAsync(startTime, endTime);
+        var availableTimeSlots = await availabilityService.GetAvailabilityAsync(null, startTime, endTime);
+        var meetings = await meetingRepository.GetAllAsync(startTime, endTime);
     }
 
     public async Task GetFreeTimeSlotsForCareGiver(int careGiverId, DateTime? from = null, DateTime? to = null)
@@ -43,9 +44,15 @@ public class ScheduleService(IAvailabilityService availabilityService, IMeetingR
             throw new ArgumentException("To date must be within 90 days from from date");
         }
 
-        var availableTimeSlots = availabilityService.GetAvailabilityAsync(careGiverId, startTime, endTime);
+        var availableTimeSlots = await availabilityService.GetAvailabilityAsync(careGiverId, startTime, endTime);
         var meetings = await meetingRepository.GetByUserIdAsync(careGiverId, false);
 
         var meetingsInTimeRange = meetings.Where(m => m.StartTime >= startTime && m.EndTime <= endTime);
+
+        List<AvailabilityDto> freeTimeslots = [];
+
+        foreach (var slot in availableTimeSlots)
+        {
+        }
     }
 }
