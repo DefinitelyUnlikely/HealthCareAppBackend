@@ -13,7 +13,7 @@ public class ScheduleController(IScheduleService scheduleService) : ControllerBa
 {
     [HttpGet]
     [Authorize] // possibly not needed, maybe anyone should be able to see the schedule?
-    public async Task<IActionResult> GetSchedules()
+    public async Task<IActionResult> GetSchedule()
     {
         return Ok();
     }

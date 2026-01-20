@@ -15,6 +15,11 @@ public class ScheduleService : IScheduleService
         var endTime = to ?? new DateTime(startTime.Year, startTime.Month,
             DateTime.DaysInMonth(startTime.Year, startTime.Month), 23, 59, 59);
 
+        if (endTime - startTime > TimeSpan.FromDays(90))
+        {
+            throw new ArgumentException("To date must be within 90 days from from date");
+        }
+
         throw new NotImplementedException();
     }
 
@@ -29,6 +34,11 @@ public class ScheduleService : IScheduleService
         var startTime = from ?? DateTime.Now;
         var endTime = to ?? new DateTime(startTime.Year, startTime.AddMonths(1).Month,
             DateTime.DaysInMonth(startTime.Year, startTime.AddMonths(1).Month), 23, 59, 59);
+
+        if (endTime - startTime > TimeSpan.FromDays(90))
+        {
+            throw new ArgumentException("To date must be within 90 days from from date");
+        }
 
         throw new NotImplementedException();
     }
