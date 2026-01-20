@@ -1,8 +1,10 @@
+using HealthCareAB_v1.Repositories.Interfaces;
 using HealthCareAB_v1.Services.Interfaces;
 
 namespace HealthCareAB_v1.Services.Implementations;
 
-public class ScheduleService : IScheduleService
+public class ScheduleService(IAvailabilityService availabilityService, IMeetingRepository meetingRepository)
+    : IScheduleService
 {
     public Task GetFreeTimeSlots(DateTime? from = null, DateTime? to = null)
     {
@@ -20,10 +22,11 @@ public class ScheduleService : IScheduleService
             throw new ArgumentException("To date must be within 90 days from from date");
         }
 
-        throw new NotImplementedException();
+        var availableTimeSlots = availabilityService.GetAvailabilityAsync(null, startTime, endTime);
+        var meetings = meetingRepository.GetAllAsync(startTime, endTime);
     }
 
-    public Task GetFreeTimeSlotsForCareGiver(int careGiverId, DateTime? from = null, DateTime? to = null)
+    public async Task GetFreeTimeSlotsForCareGiver(int careGiverId, DateTime? from = null, DateTime? to = null)
     {
         if (from > to)
         {
@@ -40,6 +43,9 @@ public class ScheduleService : IScheduleService
             throw new ArgumentException("To date must be within 90 days from from date");
         }
 
-        throw new NotImplementedException();
+        var availableTimeSlots = availabilityService.GetAvailabilityAsync(careGiverId, startTime, endTime);
+        var meetings = await meetingRepository.GetByUserIdAsync(careGiverId, false);
+
+        var meetingsInTimeRange = meetings.Where(m => m.StartTime >= startTime && m.EndTime <= endTime);
     }
 }

@@ -1,6 +1,5 @@
 using HealthCareAB_v1.Repositories.Interfaces;
 using HealthCareAB_v1.Models;
-
 using Microsoft.EntityFrameworkCore;
 
 namespace HealthCareAB_v1.Repositories;
@@ -19,20 +18,30 @@ public class MeetingRepository : IMeetingRepository
         await _context.Meetings.AddAsync(meeting);
         await _context.SaveChangesAsync();
     }
+
     public async Task<Meeting?> GetAsync(Guid id)
     {
         return await _context.Meetings
-        .Include(m => m.Caregiver)
-        .Include(m => m.Patient)
-        .FirstOrDefaultAsync(m => m.Id == id);
+            .Include(m => m.Caregiver)
+            .Include(m => m.Patient)
+            .FirstOrDefaultAsync(m => m.Id == id);
+    }
+
+    public async Task<List<Meeting>> GetAllAsync(DateTime from, DateTime to)
+    {
+        return await _context.Meetings
+            .Include(m => m.Caregiver)
+            .Include(m => m.Patient)
+            .Where(m => m.StartTime >= from && m.EndTime <= to)
+            .ToListAsync();
     }
 
     public async Task<List<Meeting>> GetByUserIdAsync(int userId, bool includeHistoric)
     {
         var query = _context.Meetings
-        .Include(m => m.Caregiver)
-        .Include(m => m.Patient)
-        .Where(m => m.PatientId == userId || m.CaregiverId == userId);
+            .Include(m => m.Caregiver)
+            .Include(m => m.Patient)
+            .Where(m => m.PatientId == userId || m.CaregiverId == userId);
 
         if (!includeHistoric)
         {
@@ -44,7 +53,8 @@ public class MeetingRepository : IMeetingRepository
 
     public async Task<bool> TimeUnavailableAsync(Meeting meeting)
     {
-        return await _context.Meetings.AnyAsync(m => m.CaregiverId == meeting.CaregiverId && m.StartTime < meeting.EndTime && m.EndTime > meeting.StartTime);
+        return await _context.Meetings.AnyAsync(m =>
+            m.CaregiverId == meeting.CaregiverId && m.StartTime < meeting.EndTime && m.EndTime > meeting.StartTime);
     }
 
     public async Task<int> SaveChangesAsync()

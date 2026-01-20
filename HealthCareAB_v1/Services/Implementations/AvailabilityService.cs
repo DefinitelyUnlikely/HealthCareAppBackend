@@ -73,7 +73,7 @@ namespace HealthCareAB_v1.Services.Implementations
             }
         }
 
-        public async Task<List<Availability>> GetAvailabilityAsync(int userId, DateTime? from = null,
+        public async Task<List<Availability>> GetAvailabilityAsync(int? userId, DateTime? from = null,
             DateTime? to = null)
         {
             if (from > to)
