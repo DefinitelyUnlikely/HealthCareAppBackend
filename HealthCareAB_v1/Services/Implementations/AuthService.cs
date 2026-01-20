@@ -67,6 +67,7 @@ namespace HealthCareAB_v1.Services
             {
                 Success = true,
                 Message = "User registered successfully",
+                Id = user.Id,
                 Username = user.Username,
                 Roles = user.Roles
             };
@@ -110,6 +111,7 @@ namespace HealthCareAB_v1.Services
             {
                 Success = true,
                 Message = "Login successful",
+                Id = user.Id,
                 Username = user.Username,
                 Roles = user.Roles
             }, token);
