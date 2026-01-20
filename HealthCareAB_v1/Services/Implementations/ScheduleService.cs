@@ -7,24 +7,28 @@ namespace HealthCareAB_v1.Services.Implementations;
 public class ScheduleService(IAvailabilityService availabilityService, IMeetingRepository meetingRepository)
     : IScheduleService
 {
+    // This will be kept unimplemented for now. I do not have time to think about the 
+    // requried logic for this method with the time we have left to work on the project.
     public async Task GetFreeTimeSlots(DateTime? from = null, DateTime? to = null)
     {
-        if (from > to)
-        {
-            throw new ArgumentException("From date must be before to date");
-        }
+        // if (from > to)
+        // {
+        //     throw new ArgumentException("From date must be before to date");
+        // }
 
-        var startTime = from ?? DateTime.Now;
-        var endTime = to ?? new DateTime(startTime.Year, startTime.Month,
-            DateTime.DaysInMonth(startTime.Year, startTime.Month), 23, 59, 59);
+        // var startTime = from ?? DateTime.Now;
+        // var endTime = to ?? new DateTime(startTime.Year, startTime.Month,
+        //     DateTime.DaysInMonth(startTime.Year, startTime.Month), 23, 59, 59);
 
-        if (endTime - startTime > TimeSpan.FromDays(90))
-        {
-            throw new ArgumentException("To date must be within 90 days from from date");
-        }
+        // if (endTime - startTime > TimeSpan.FromDays(90))
+        // {
+        //     throw new ArgumentException("To date must be within 90 days from from date");
+        // }
 
-        var availableTimeSlots = await availabilityService.GetAvailabilityAsync(null, startTime, endTime);
-        var meetings = await meetingRepository.GetAllAsync(startTime, endTime);
+        // var availableTimeSlots = await availabilityService.GetAvailabilityAsync(null, startTime, endTime);
+        // var meetings = await meetingRepository.GetAllAsync(startTime, endTime);
+
+        throw new NotImplementedException();
     }
 
     public async Task<List<AvailabilityDto>> GetFreeTimeSlotsForCareGiver(int careGiverId, DateTime? from = null,
