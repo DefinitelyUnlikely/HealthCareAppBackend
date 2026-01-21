@@ -12,13 +12,13 @@ namespace HealthCareAB_v1.Services.Implementations
     {
         public async Task SetAvailableAsync(int userId, DateTime? from = null, DateTime? to = null)
         {
-            if (from > to)
+            var startTime = from ?? DateTime.Now;
+            var endTime = to ?? DateTime.Now.AddMonths(3);
+
+            if (startTime > endTime)
             {
                 throw new ArgumentException("Start time of range cannot be larger than end time of range");
             }
-
-            var startTime = from ?? DateTime.Now;
-            var endTime = to ?? DateTime.Now.AddMonths(3);
 
             if (startTime < startTime.Date.AddHours(8))
             {
@@ -35,8 +35,8 @@ namespace HealthCareAB_v1.Services.Implementations
                 var availability = new Availability
                 {
                     CaregiverId = userId,
-                    StartTime = day.AddHours(8),
-                    EndTime = day.AddHours(16)
+                    StartDate = day.AddHours(8),
+                    EndDate = day.AddHours(16)
                 };
 
                 await availabilityRepository.SaveAvailabilityAsync(availability);
@@ -46,13 +46,13 @@ namespace HealthCareAB_v1.Services.Implementations
         public async Task SetUnavailableAsync(int userId, DateTime? from = null, DateTime? to = null,
             bool forceCancel = false)
         {
-            if (from > to)
+            var startTime = from ?? DateTime.Now;
+            var endTime = to ?? DateTime.Now.AddMonths(3);
+
+            if (startTime > endTime)
             {
                 throw new ArgumentException("Start time of range cannot be larger than end time of range");
             }
-
-            var startTime = from ?? DateTime.Now;
-            var endTime = to ?? DateTime.Now.AddMonths(3);
 
             // If forceCancel is not true and my new way of thinking of it works, 
             // all we need to do is remove the availability. 
@@ -76,13 +76,13 @@ namespace HealthCareAB_v1.Services.Implementations
         public async Task<List<Availability>> GetAvailabilityAsync(int? userId, DateTime? from = null,
             DateTime? to = null)
         {
-            if (from > to)
+            var startTime = from ?? DateTime.Now;
+            var endTime = to ?? DateTime.Now.AddMonths(3);
+
+            if (startTime > endTime)
             {
                 throw new ArgumentException("Start time of range cannot be larger than end time of range");
             }
-
-            var startTime = from ?? DateTime.Now;
-            var endTime = to ?? DateTime.Now.AddMonths(3);
 
             var availability = await availabilityRepository.GetAvailabilityAsync(userId, startTime, endTime);
 

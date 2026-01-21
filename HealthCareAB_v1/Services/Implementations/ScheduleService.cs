@@ -59,8 +59,8 @@ public class ScheduleService(IAvailabilityService availabilityService, IMeetingR
 
         foreach (var slot in availableTimeSlots)
         {
-            var currentStart = slot.StartTime;
-            var currentEnd = slot.EndTime;
+            var currentStart = slot.StartDate;
+            var currentEnd = slot.EndDate;
 
             var overlappingMeetings = meetingsInTimeRange
                 .Where(m => m.StartTime < currentEnd && m.EndTime > currentStart)
