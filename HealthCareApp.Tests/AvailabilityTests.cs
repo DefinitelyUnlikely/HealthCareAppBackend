@@ -66,7 +66,7 @@ public class AvailabilityTests
 
         // Assert
         _mockAvailabilityRepo.Verify(r => r.SaveAvailabilityAsync(It.Is<Availability>(a =>
-            a.StartTime.Hour == 8 && a.EndTime.Hour == 16)), Times.Once);
+            a.StartDate.Hour == 8 && a.EndDate.Hour == 16)), Times.Once);
     }
 
     [Fact]
@@ -172,8 +172,8 @@ public class AvailabilityTests
             new Availability
             {
                 CaregiverId = 1,
-                StartTime = from,
-                EndTime = to
+                StartDate = from,
+                EndDate = to
             }
         };
 

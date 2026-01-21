@@ -30,7 +30,7 @@ public class ScheduleServiceTests
         var end = start.AddHours(8);
         var availabilitySlots = new List<Availability>
         {
-            new() { CaregiverId = careGiverId, StartTime = start, EndTime = end }
+            new() { CaregiverId = careGiverId, StartDate = start, EndDate = end }
         };
 
         _mockAvailabilityService
@@ -58,7 +58,7 @@ public class ScheduleServiceTests
         var end = start.AddHours(8); // 16:00
         var availabilitySlots = new List<Availability>
         {
-            new() { CaregiverId = careGiverId, StartTime = start, EndTime = end }
+            new() { CaregiverId = careGiverId, StartDate = start, EndDate = end }
         };
 
         var meetingStart = start.AddHours(3); // 11:00
@@ -96,7 +96,7 @@ public class ScheduleServiceTests
         var end = start.AddHours(8);
         var availabilitySlots = new List<Availability>
         {
-            new() { CaregiverId = careGiverId, StartTime = start, EndTime = end }
+            new() { CaregiverId = careGiverId, StartDate = start, EndDate = end }
         };
 
         var meetingStart = start;
@@ -130,7 +130,7 @@ public class ScheduleServiceTests
         var end = start.AddHours(8);
         var availabilitySlots = new List<Availability>
         {
-            new() { CaregiverId = careGiverId, StartTime = start, EndTime = end }
+            new() { CaregiverId = careGiverId, StartDate = start, EndDate = end }
         };
 
         var meetingStart = end.AddHours(-2);
@@ -184,7 +184,7 @@ public class ScheduleServiceTests
         var end = start.AddHours(8); // 16:00
         var availabilitySlots = new List<Availability>
         {
-            new() { CaregiverId = careGiverId, StartTime = start, EndTime = end }
+            new() { CaregiverId = careGiverId, StartDate = start, EndDate = end }
         };
 
         var meeting1Start = start.AddHours(2); // 10:00
