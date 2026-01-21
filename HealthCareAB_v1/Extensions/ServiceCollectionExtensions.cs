@@ -29,6 +29,7 @@ namespace HealthCareAB_v1.Extensions
             services.AddScoped<IAvailabilityService, AvailabilityService>();
             services.AddScoped<IScheduleRepository, ScheduleRepository>();
             services.AddScoped<IScheduleService, ScheduleService>();
+            services.AddHostedService<ExpiredPendingMeetingsCleanupService>();
             return services;
         }
 
