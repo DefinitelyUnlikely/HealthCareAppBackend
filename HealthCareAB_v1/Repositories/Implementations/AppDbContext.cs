@@ -1,0 +1,50 @@
+using System;
+using HealthCareAB_v1.Models;
+using HealthCareAB_v1.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+
+namespace HealthCareAB_v1.Repositories
+{
+    public class AppDbContext : DbContext, IAppDbContext
+    {
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+        {
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.UseSerialColumns();
+
+            var rolesConverter = new ValueConverter<List<string>, string>(
+                v => JsonSerializer.Serialize(v, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }),
+                v => JsonSerializer.Deserialize<List<string>>(v,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<string>());
+
+            modelBuilder.Entity<User>()
+                .Property(e => e.Roles)
+                .HasConversion(rolesConverter)
+                .HasColumnType("jsonb");
+
+            modelBuilder.Entity<Meeting>()
+                .Property(e => e.Status)
+                .HasConversion<string>()
+                .HasColumnType("text");
+        }
+
+        public DbSet<User> Users { get; set; }
+        public DbSet<Meeting> Meetings { get; set; }
+        public DbSet<Caregiver> Caregivers { get; set; }
+        public DbSet<Patient> Patients { get; set; }
+        public DbSet<Availability> Availabilities { get; set; }
+        public DbSet<Feedback> Feedbacks { get; set; }
+
+
+        public new Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            return base.SaveChangesAsync(cancellationToken);
+        }
+    }
+}

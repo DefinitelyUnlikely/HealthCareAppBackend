@@ -1,0 +1,69 @@
+name: build and test
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+    - '**.md'
+    - '.gitignore'
+  pull_request:
+    branches: [ main ]
+    paths-ignore:
+    - '**.md'
+    - '.gitignore'
+
+env:
+  DOTNET_VERSION: '8.0.x' # The .NET SDK version to use
+
+jobs:
+  build-and-test:
+
+    name: build-and-test-ubuntu-latest
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+      
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: Install dependencies
+      run: dotnet restore
+      
+    - name: Check code formatting
+      run: dotnet format --verify-no-changes
+      
+    - name: Build
+      run: dotnet build --configuration Release --no-restore # --configuration Debug if we're using a develop branch
+      
+    - name: Run tests with coverage
+      run: dotnet test --configuration Release --no-build --no-restore --settings tests.runsettings
+      # --configuration Debug if we're using a develop branch --collect:"XPlat Code Coverage" removed to allow excludes
+    
+    - name: Publish coverage
+      uses: irongut/CodeCoverageSummary@v1.3.0
+      with:
+        filename: '**/TestResults/**/coverage.cobertura.xml'
+        # badge: true
+        fail_below_min: false #true
+        format: markdown
+        indicators: true
+        output: both
+        thresholds: '30 60' # These should be tweaked
+
+    - name: Write to Job Summary
+      run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
+      
+    # Make sure github security scanner is set up correctly otherwise run:
+    #- name: Security scan
+    #  run: dotnet list package --vulnerable --include-transitive --severity high # Fail on high severity vulnerability
+
