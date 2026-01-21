@@ -19,19 +19,19 @@ public class AvailabilityRepository(IAppDbContext context) : IAvailabilityReposi
         if (userId == null)
         {
             return await _context.Availabilities
-                .Where(a => a.StartTime <= to && a.EndTime >= from)
+                .Where(a => a.StartDate <= to && a.EndDate >= from)
                 .ToListAsync();
         }
 
         return await _context.Availabilities
-            .Where(a => a.CaregiverId == userId && a.StartTime <= to && a.EndTime >= from)
+            .Where(a => a.CaregiverId == userId && a.StartDate <= to && a.EndDate >= from)
             .ToListAsync();
     }
 
     public async Task DeleteAvailabilityAsync(int userId, DateTime? from, DateTime? to)
     {
         var availability = await _context.Availabilities
-            .Where(a => a.CaregiverId == userId && a.StartTime <= to && a.EndTime >= from)
+            .Where(a => a.CaregiverId == userId && a.StartDate <= to && a.EndDate >= from)
             .ToListAsync();
 
         _context.Availabilities.RemoveRange(availability);

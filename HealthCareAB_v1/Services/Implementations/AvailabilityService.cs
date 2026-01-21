@@ -35,8 +35,8 @@ namespace HealthCareAB_v1.Services.Implementations
                 var availability = new Availability
                 {
                     CaregiverId = userId,
-                    StartTime = day.AddHours(8),
-                    EndTime = day.AddHours(16)
+                    StartDate = day.AddHours(8),
+                    EndDate = day.AddHours(16)
                 };
 
                 await availabilityRepository.SaveAvailabilityAsync(availability);
