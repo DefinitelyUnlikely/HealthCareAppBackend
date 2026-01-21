@@ -62,7 +62,7 @@ public class MeetingService : IMeetingService
             await _availabilityService.GetAvailabilityAsync(request.CaregiverId, request.StartTime, endTime);
         if (availability.Count == 0 || await _meetingRepository.TimeUnavailableAsync(newMeeting))
         {
-            return new MeetingResponseDto() { Success = false, Message = "Meeting time unavailable" };
+            return new MeetingResponseDto { Success = false, Message = "Meeting time unavailable" };
         }
 
         await _meetingRepository.CreateAsync(newMeeting);

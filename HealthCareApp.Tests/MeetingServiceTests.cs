@@ -955,4 +955,48 @@ public class MeetingServiceTests
         Assert.Empty(result);
         mockRepo.Verify(r => r.GetByUserIdAsync(userId, historic), Times.Once);
     }
+
+    [Fact]
+    public async Task CreateAsync_NoAvailability_ReturnsFailure()
+    {
+        // Arrange
+        var meetingDto = new CreateMeetingDto
+        {
+            CaregiverId = 1,
+            PatientId = 2,
+            StartTime = DateTime.Now.AddHours(1),
+        };
+
+        var mockMeetingRepository = new Mock<IMeetingRepository>();
+        var mockNotificationService = new Mock<INotificationService>();
+        var mockUserService = new Mock<IUserService>();
+        var mockAvailabilityService = new Mock<IAvailabilityService>();
+
+        // Set up availability to return an empty list
+        mockAvailabilityService.Setup(repo => repo.GetAvailabilityAsync(
+                meetingDto.CaregiverId,
+                It.IsAny<DateTime>(),
+                It.IsAny<DateTime>()))
+            .ReturnsAsync(new List<Availability>());
+
+        mockMeetingRepository.Setup(repo => repo.TimeUnavailableAsync(It.IsAny<Meeting>())).ReturnsAsync(false);
+        mockUserService.Setup(repo => repo.GetUserByIdAsync(1))
+            .ReturnsAsync(new User { Id = 1, Roles = ["Caregiver"] });
+        mockUserService.Setup(repo => repo.GetUserByIdAsync(2)).ReturnsAsync(new User { Id = 2, Roles = ["Patient"] });
+
+        var meetingService = new MeetingService(mockMeetingRepository.Object, mockNotificationService.Object,
+            mockUserService.Object, mockAvailabilityService.Object);
+
+        // Act
+        var result = await meetingService.CreateAsync(meetingDto);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal("Meeting time unavailable", result.Message);
+        mockAvailabilityService.Verify(repo => repo.GetAvailabilityAsync(
+            meetingDto.CaregiverId,
+            It.IsAny<DateTime>(),
+            It.IsAny<DateTime>()), Times.Once);
+        mockMeetingRepository.Verify(repo => repo.CreateAsync(It.IsAny<Meeting>()), Times.Never);
+    }
 }
