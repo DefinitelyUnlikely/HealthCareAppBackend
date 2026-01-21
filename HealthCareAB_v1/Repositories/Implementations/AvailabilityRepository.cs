@@ -14,7 +14,7 @@ public class AvailabilityRepository(IAppDbContext context) : IAvailabilityReposi
         await _context.SaveChangesAsync();
     }
 
-    public async Task<List<Availability>> GetAvailabilityAsync(int? userId, DateTime? from, DateTime? to)
+    public async Task<List<Availability>> GetAvailabilityAsync(int? userId, DateTime from, DateTime to)
     {
         if (userId == null)
         {
@@ -28,7 +28,7 @@ public class AvailabilityRepository(IAppDbContext context) : IAvailabilityReposi
             .ToListAsync();
     }
 
-    public async Task DeleteAvailabilityAsync(int userId, DateTime? from, DateTime? to)
+    public async Task DeleteAvailabilityAsync(int userId, DateTime from, DateTime to)
     {
         var availability = await _context.Availabilities
             .Where(a => a.CaregiverId == userId && a.StartDate <= to && a.EndDate >= from)
