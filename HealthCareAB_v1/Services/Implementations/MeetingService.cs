@@ -13,15 +13,16 @@ public class MeetingService : IMeetingService
     private readonly IMeetingRepository _meetingRepository;
     private readonly INotificationService _notificationService;
     private readonly IUserService _userService;
-    private readonly IAvailabilityService _availabilityService;
+    private readonly IAvailabilityRepository _availabilityRepository;
 
     public MeetingService(IMeetingRepository meetingRepository, INotificationService notificationService,
-        IUserService userService, IAvailabilityService availabilityService)
+        IUserService userService, IAvailabilityRepository availabilityRepository)
     {
         _meetingRepository = meetingRepository ?? throw new ArgumentNullException(nameof(meetingRepository));
         _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
         _userService = userService ?? throw new ArgumentNullException(nameof(userService));
-        _availabilityService = availabilityService ?? throw new ArgumentNullException(nameof(availabilityService));
+        _availabilityRepository =
+            availabilityRepository ?? throw new ArgumentNullException(nameof(availabilityRepository));
     }
 
     /// <summary>
@@ -59,7 +60,7 @@ public class MeetingService : IMeetingService
         };
 
         var availability =
-            await _availabilityService.GetAvailabilityAsync(request.CaregiverId, request.StartTime, endTime);
+            await _availabilityRepository.GetAvailabilityAsync(request.CaregiverId, request.StartTime, endTime);
         if (availability.Count == 0 || await _meetingRepository.TimeUnavailableAsync(newMeeting))
         {
             return new MeetingResponseDto { Success = false, Message = "Meeting time unavailable" };
@@ -173,7 +174,7 @@ public class MeetingService : IMeetingService
         if (meeting.StartTime < DateTime.Now.AddHours(23) && patientCancel) // Extra lenience because of DST.
         {
             return new MeetingResponseDto
-            { Success = false, Message = "Can only cancel meetings at least 24 hours ahead" };
+                { Success = false, Message = "Can only cancel meetings at least 24 hours ahead" };
         }
 
         meeting.Canceled = true;
@@ -229,7 +230,7 @@ public class MeetingService : IMeetingService
         if (meeting.StartTime < DateTime.Now.AddHours(23) && patientUpdate) // Extra lenience because of DST.
         {
             return new MeetingResponseDto
-            { Success = false, Message = "Can only reschedule meetings at least 24 hours ahead" };
+                { Success = false, Message = "Can only reschedule meetings at least 24 hours ahead" };
         }
 
         var newMeeting = new Meeting
