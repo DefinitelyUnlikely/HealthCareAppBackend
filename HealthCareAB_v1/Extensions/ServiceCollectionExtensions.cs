@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using HealthCareAB_v1.Constants;
 using System.Text;
+using HealthCareAB_v1.Repositories.Implementations;
+using HealthCareAB_v1.Services.Implementations;
 
 namespace HealthCareAB_v1.Extensions
 {
@@ -23,6 +25,8 @@ namespace HealthCareAB_v1.Extensions
             services.AddScoped<IMeetingService, MeetingService>();
             services.AddScoped<IJwtTokenService, JwtTokenService>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IAvailabilityRepository, AvailabilityRepository>();
+            services.AddScoped<IAvailabilityService, AvailabilityService>();
             return services;
         }
 
@@ -45,9 +49,9 @@ namespace HealthCareAB_v1.Extensions
         {
             // Bind and validate JWT settings
             var jwtSettings = configuration
-                .GetSection(JwtSettings.SectionName)
-                .Get<JwtSettings>()
-                ?? throw new InvalidOperationException("JwtSettings configuration section is missing");
+                                  .GetSection(JwtSettings.SectionName)
+                                  .Get<JwtSettings>()
+                              ?? throw new InvalidOperationException("JwtSettings configuration section is missing");
 
             services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
 
