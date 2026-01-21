@@ -27,6 +27,8 @@ namespace HealthCareAB_v1.Extensions
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IAvailabilityRepository, AvailabilityRepository>();
             services.AddScoped<IAvailabilityService, AvailabilityService>();
+            services.AddScoped<IScheduleRepository, ScheduleRepository>();
+            services.AddScoped<IScheduleService, ScheduleService>();
             return services;
         }
 
