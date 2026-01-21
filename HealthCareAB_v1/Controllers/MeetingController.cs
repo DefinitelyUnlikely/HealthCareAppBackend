@@ -78,17 +78,17 @@ public class MeetingController : ControllerBase
     /// </summary>
     /// <returns>A list of meetings for the user.</returns>
     [Authorize]
-    [HttpGet("historic")]
+    [HttpGet("")]
     [ProducesResponseType(typeof(List<MeetingDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> GetMeetingsForUser(bool historic)
+    public async Task<IActionResult> GetMeetingsForUser([FromQuery] bool? historic)
     {
         if (!int.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out int userId))
         {
             return Unauthorized(new { message = "Not authenticated" });
         }
 
-        var result = await _meetingService.GetMeetingsAsync(userId, historic);
+        var result = await _meetingService.GetMeetingsAsync(userId, historic ?? false);
         return Ok(result);
     }
 
