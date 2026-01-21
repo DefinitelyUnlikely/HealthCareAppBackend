@@ -174,7 +174,7 @@ public class MeetingService : IMeetingService
         if (meeting.StartTime < DateTime.Now.AddHours(23) && patientCancel) // Extra lenience because of DST.
         {
             return new MeetingResponseDto
-                { Success = false, Message = "Can only cancel meetings at least 24 hours ahead" };
+            { Success = false, Message = "Can only cancel meetings at least 24 hours ahead" };
         }
 
         meeting.Canceled = true;
@@ -230,7 +230,7 @@ public class MeetingService : IMeetingService
         if (meeting.StartTime < DateTime.Now.AddHours(23) && patientUpdate) // Extra lenience because of DST.
         {
             return new MeetingResponseDto
-                { Success = false, Message = "Can only reschedule meetings at least 24 hours ahead" };
+            { Success = false, Message = "Can only reschedule meetings at least 24 hours ahead" };
         }
 
         var newMeeting = new Meeting
