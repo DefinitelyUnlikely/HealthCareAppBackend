@@ -64,19 +64,19 @@ public class MeetingRepository : IMeetingRepository
 
     public async Task<int> DeleteExpiredPendingMeetingsAsync()
     {
-    var cutoff = DateTime.UtcNow.AddMinutes(-15);
+        var cutoff = DateTime.UtcNow.AddMinutes(-15);
 
-    var expired = await _context.Meetings
-        .Where(m =>
-            m.Status == MeetingStatus.Pending &&
-            m.ExpiresAt != null &&
-            m.ExpiresAt <= cutoff)
-        .ToListAsync();
+        var expired = await _context.Meetings
+            .Where(m =>
+                m.Status == MeetingStatus.Pending &&
+                m.ExpiresAt != null &&
+                m.ExpiresAt <= cutoff)
+            .ToListAsync();
 
-    if (expired.Count == 0) return 0;
+        if (expired.Count == 0) return 0;
 
-    _context.Meetings.RemoveRange(expired);
-    await _context.SaveChangesAsync();
-    return expired.Count;
+        _context.Meetings.RemoveRange(expired);
+        await _context.SaveChangesAsync();
+        return expired.Count;
     }
 }
