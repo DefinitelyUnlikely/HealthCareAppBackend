@@ -45,7 +45,7 @@ public class MeetingRepository : IMeetingRepository
 
         if (!includeHistoric)
         {
-            query = query.Where(m => m.StartTime > DateTime.Now);
+            query = query.Where(m => m.StartTime > DateTime.UtcNow);
         }
 
         return await query.ToListAsync();
