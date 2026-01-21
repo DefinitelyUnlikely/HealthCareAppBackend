@@ -13,12 +13,15 @@ public class MeetingService : IMeetingService
     private readonly IMeetingRepository _meetingRepository;
     private readonly INotificationService _notificationService;
     private readonly IUserService _userService;
+    private readonly IAvailabilityService _availabilityService;
 
-    public MeetingService(IMeetingRepository meetingRepository, INotificationService notificationService, IUserService userService)
+    public MeetingService(IMeetingRepository meetingRepository, INotificationService notificationService,
+        IUserService userService, IAvailabilityService availabilityService)
     {
         _meetingRepository = meetingRepository ?? throw new ArgumentNullException(nameof(meetingRepository));
         _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
         _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+        _availabilityService = availabilityService ?? throw new ArgumentNullException(nameof(availabilityService));
     }
 
     /// <summary>
@@ -36,6 +39,7 @@ public class MeetingService : IMeetingService
         {
             return new MeetingResponseDto() { Success = false, Message = "The user is not a patient" };
         }
+
         var caregiver = await _userService.GetUserByIdAsync(request.CaregiverId);
         if (caregiver is null || !caregiver.Roles.Contains("Caregiver"))
         {
@@ -54,7 +58,9 @@ public class MeetingService : IMeetingService
             Status = MeetingStatus.Pending,
         };
 
-        if (await _meetingRepository.TimeUnavailableAsync(newMeeting))
+        var availability =
+            await _availabilityService.GetAvailabilityAsync(request.CaregiverId, request.StartTime, endTime);
+        if (availability.Count == 0 || await _meetingRepository.TimeUnavailableAsync(newMeeting))
         {
             return new MeetingResponseDto() { Success = false, Message = "Meeting time unavailable" };
         }
@@ -92,6 +98,7 @@ public class MeetingService : IMeetingService
             {
                 continue;
             }
+
             result.Add(new MeetingDto()
             {
                 Id = meeting.Id,
@@ -103,6 +110,7 @@ public class MeetingService : IMeetingService
                 CaregiverName = $"{meeting.Caregiver?.FirstName} {meeting.Caregiver?.LastName}",
             });
         }
+
         return result;
     }
 
@@ -164,7 +172,8 @@ public class MeetingService : IMeetingService
 
         if (meeting.StartTime < DateTime.Now.AddHours(23) && patientCancel) // Extra lenience because of DST.
         {
-            return new MeetingResponseDto { Success = false, Message = "Can only cancel meetings at least 24 hours ahead" };
+            return new MeetingResponseDto
+            { Success = false, Message = "Can only cancel meetings at least 24 hours ahead" };
         }
 
         meeting.Canceled = true;
@@ -219,7 +228,8 @@ public class MeetingService : IMeetingService
         // Try to create new meeting and cancel old meeting
         if (meeting.StartTime < DateTime.Now.AddHours(23) && patientUpdate) // Extra lenience because of DST.
         {
-            return new MeetingResponseDto { Success = false, Message = "Can only reschedule meetings at least 24 hours ahead" };
+            return new MeetingResponseDto
+            { Success = false, Message = "Can only reschedule meetings at least 24 hours ahead" };
         }
 
         var newMeeting = new Meeting
