@@ -13,7 +13,6 @@ builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddApplicationServices();
 builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddAuthorization();
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
